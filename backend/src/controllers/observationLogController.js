@@ -48,9 +48,9 @@ const getObservationLogById = async (req, res) => {
 // CREATE observation log
 const createObservationLog = async (req, res) => {
   try {
-    const { userId, objectId, observationDate, notes, equipment, seeingCondition } = req.body;
+    const { UserID, ObjectID, ObservationDate, Notes, Equipment, SeeingCondition, Location } = req.body;
 
-    if (!userId || !objectId || !observationDate) {
+    if (!UserID || !ObjectID || !ObservationDate) {
       return res.status(400).json({
         success: false,
         message: "UserID, ObjectID, and ObservationDate are required",
@@ -58,17 +58,17 @@ const createObservationLog = async (req, res) => {
     }
 
     const logId = await observationLogModel.createObservationLog(
-      userId,
-      objectId,
-      observationDate,
-      notes || "",
-      equipment || "",
-      seeingCondition || ""
+      UserID,
+      ObjectID,
+      ObservationDate,
+      Notes || "",
+      Equipment || "",
+      SeeingCondition || ""
     );
 
     res.status(201).json({
       success: true,
-      data: { LogID: logId, userId, objectId, observationDate },
+      data: { LogID: logId, UserID, ObjectID, ObservationDate },
       message: "Observation log created successfully",
     });
   } catch (error) {
@@ -84,9 +84,9 @@ const createObservationLog = async (req, res) => {
 const updateObservationLog = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId, objectId, observationDate, notes, equipment, seeingCondition } = req.body;
+    const { UserID, ObjectID, ObservationDate, Notes, Equipment, SeeingCondition } = req.body;
 
-    if (!userId || !objectId || !observationDate) {
+    if (!UserID || !ObjectID || !ObservationDate) {
       return res.status(400).json({
         success: false,
         message: "UserID, ObjectID, and ObservationDate are required",
@@ -95,12 +95,12 @@ const updateObservationLog = async (req, res) => {
 
     const rowsAffected = await observationLogModel.updateObservationLog(
       id,
-      userId,
-      objectId,
-      observationDate,
-      notes || "",
-      equipment || "",
-      seeingCondition || ""
+      UserID,
+      ObjectID,
+      ObservationDate,
+      Notes || "",
+      Equipment || "",
+      SeeingCondition || ""
     );
 
     if (rowsAffected === 0) {
@@ -112,7 +112,7 @@ const updateObservationLog = async (req, res) => {
 
     res.json({
       success: true,
-      data: { LogID: id, userId, objectId, observationDate },
+      data: { LogID: id, UserID, ObjectID, ObservationDate },
       message: "Observation log updated successfully",
     });
   } catch (error) {

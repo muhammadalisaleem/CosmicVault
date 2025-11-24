@@ -287,12 +287,13 @@ export const logAPI = {
 
   // Create observation log
   async create(log: {
-    userId: number;
-    objectId: number;
-    observationDate: string;
-    notes?: string;
-    equipment?: string;
-    seeingCondition?: string;
+    UserID: number;
+    ObjectID: number;
+    ObservationDate: string;
+    Notes?: string;
+    Equipment?: string;
+    SeeingCondition?: string;
+    Location?: string;
   }) {
     const response = await fetch(`${API_URL}/logs`, {
       method: 'POST',
