@@ -28,16 +28,24 @@ export function UserProfile({ user, onNavigate, onLogout }: UserProfileProps) {
 
   const loadUserStats = async () => {
     try {
+      if (!user?.id) {
+        setUserStats({
+          totalObservations: 0,
+          totalObjects: 0,
+          favoriteConstellations: 0,
+          observationHours: 0
+        });
+        setLoading(false);
+        return;
+      }
       const [logs, objects] = await Promise.all([
-        logAPI.getAll(),
+        logAPI.getByUser(user.id),
         objectAPI.getAll()
       ]);
-      // Filter user's logs
-      const userLogs = logs.filter((log: any) => log.UserID === user?.id);
       // Calculate hours (assuming average 4 hours per observation)
-      const hours = userLogs.length * 4;
+      const hours = logs.length * 4;
       setUserStats({
-        totalObservations: userLogs.length,
+        totalObservations: logs.length,
         totalObjects: objects.length,
         favoriteConstellations: 12,
         observationHours: hours

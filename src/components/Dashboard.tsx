@@ -23,13 +23,23 @@ export function Dashboard({ user, onNavigate, onLogout }: DashboardProps) {
   // Load stats from API on mount
   useEffect(() => {
     loadStats();
-  }, []);
+  }, [user?.id]);
 
   const loadStats = async () => {
     try {
+      if (!user?.id) {
+        setStats({
+          totalObservations: 0,
+          totalObjects: 0,
+          savedConstellations: 0,
+          recentActivity: 0
+        });
+        setLoading(false);
+        return;
+      }
       const [objects, logs, constellations] = await Promise.all([
         objectAPI.getAll(),
-        logAPI.getAll(),
+        logAPI.getByUser(user.id),
         constellationAPI.getAll()
       ]);
       
