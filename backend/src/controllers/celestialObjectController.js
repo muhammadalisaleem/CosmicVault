@@ -172,9 +172,9 @@ const updateCelestialObject = async (req, res) => {
       if (star) {
         await celestialObjectModel.updateStarDetails(
           star.StarID,
-          starDetails.surfaceTemperature,
-          starDetails.luminosity,
-          starDetails.radius,
+          starDetails.spectralClass,
+          starDetails.luminosityClass,
+          starDetails.temperature,
           starDetails.mass
         );
       }
@@ -186,10 +186,10 @@ const updateCelestialObject = async (req, res) => {
       if (exoplanet) {
         await celestialObjectModel.updateExoplanetDetails(
           exoplanet.ExoplanetID,
-          exoplanetDetails.hostStarName,
-          exoplanetDetails.discoveryYear,
+          exoplanetDetails.hostStarId,
           exoplanetDetails.orbitalPeriod,
-          exoplanetDetails.radius
+          exoplanetDetails.semiMajorAxis,
+          exoplanetDetails.eccentricity
         );
       }
     }

@@ -95,10 +95,50 @@ export function CelestialObjectForm({ user, onNavigate, onLogout, editingId }: C
     }
     try {
       setLoading(true);
+      
+      // Find type ID by TypeName
+      const selectedType = types.find(t => t.TypeName === formData.type);
+      const typeId = selectedType?.TypeID || 1;
+      
+      // Find constellation ID by Name
+      const selectedConstellation = constellations.find(c => c.Name === formData.constellation);
+      const constellationId = selectedConstellation?.ConstellationID || null;
+      
+      // Build the API payload
+      const payload: any = {
+        name: formData.name,
+        typeId,
+        constellationId,
+        rightAscension: formData.rightAscension,
+        declination: formData.declination,
+        magnitude: formData.apparentMagnitude,
+        distance: formData.distance
+      };
+      
+      // Add star details if it's a Star
+      if (formData.type === 'Star') {
+        payload.starDetails = {
+          spectralClass: formData.spectralClass,
+          luminosityClass: formData.luminosityClass,
+          temperature: formData.temperature,
+          mass: formData.mass
+        };
+      }
+      
+      // Add exoplanet details if it's an Exoplanet
+      if (formData.type === 'Exoplanet') {
+        payload.exoplanetDetails = {
+          hostStarId: formData.hostStar,
+          orbitalPeriod: formData.orbitalPeriod,
+          semiMajorAxis: formData.semiMajorAxis,
+          eccentricity: formData.eccentricity
+        };
+      }
+      
       if (editingId) {
-        await objectAPI.update(editingId, formData as any);
+        await objectAPI.update(editingId, payload);
       } else {
-        await objectAPI.create(formData as any);
+        await objectAPI.create(payload);
       }
       onNavigate('celestial-objects');
     } catch (err) {

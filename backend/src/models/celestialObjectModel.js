@@ -4,13 +4,39 @@ const { getPool, sql } = require("../config/database");
 const getAllCelestialObjects = async () => {
   const pool = getPool();
   try {
-    const result = await pool.request().query(`SELECT COUNT(*) as cnt FROM CelestialObjects`);
-    console.log("Total objects:", result.recordset[0].cnt);
-    
-    const result2 = await pool.request().query(`SELECT TOP 5 ObjectID, Name FROM CelestialObjects ORDER BY ObjectID DESC`);
-    return result2.recordset;
+    const result = await pool.request().query(`
+      SELECT 
+        co.ObjectID,
+        co.Name,
+        co.TypeID,
+        ot.TypeName,
+        co.ConstellationID,
+        c.Name as ConstellationName,
+        co.RightAscension,
+        co.Declination,
+        co.DistanceLightYears as Distance,
+        co.ApparentMagnitude,
+        sd.StarID,
+        sd.SpectralClass,
+        sd.LuminosityClass,
+        sd.Temperature,
+        sd.MassSolar as Mass,
+        ed.ExoplanetID,
+        ed.HostStarID,
+        ed.OrbitalPeriodDays as OrbitalPeriod,
+        ed.SemiMajorAxisAU as SemiMajorAxis,
+        ed.Eccentricity
+      FROM CelestialObjects co
+      LEFT JOIN ObjectTypes ot ON co.TypeID = ot.TypeID
+      LEFT JOIN Constellations c ON co.ConstellationID = c.ConstellationID
+      LEFT JOIN StarDetails sd ON co.ObjectID = sd.ObjectID
+      LEFT JOIN ExoplanetDetails ed ON co.ObjectID = ed.ObjectID
+      ORDER BY co.ObjectID DESC
+    `);
+    console.log(`Fetched ${result.recordset.length} celestial objects`);
+    return result.recordset;
   } catch (err) {
-    console.error("Query error:", err);
+    console.error("Error in getAllCelestialObjects:", err.message);
     throw err;
   }
 };
@@ -47,7 +73,7 @@ const getCelestialObjectById = async (objectId) => {
       LEFT JOIN ObjectTypes ot ON co.TypeID = ot.TypeID
       LEFT JOIN Constellations c ON co.ConstellationID = c.ConstellationID
       LEFT JOIN StarDetails sd ON co.ObjectID = sd.StarID
-      LEFT JOIN ExoplanetDetails ed ON co.ObjectID = ed.ObjectID
+      LEFT JOIN ExoplanetDetails ed ON co.ObjectID = ed.ExoplanetID
       WHERE co.ObjectID = @ObjectID
     `);
   return result.recordset[0];
@@ -123,33 +149,33 @@ const updateCelestialObject = async (objectId, name, typeId, constellationId, ra
 };
 
 // UPDATE star details
-const updateStarDetails = async (starId, surfaceTemp, luminosity, radius, mass) => {
+const updateStarDetails = async (starId, spectralClass, luminosityClass, temperature, mass) => {
   const pool = getPool();
   const result = await pool
     .request()
     .input("StarID", sql.Int, starId)
-    .input("SurfaceTemperature", sql.Float, surfaceTemp)
-    .input("Luminosity", sql.Float, luminosity)
-    .input("Radius", sql.Float, radius)
-    .input("Mass", sql.Float, mass)
+    .input("SpectralClass", sql.VarChar, spectralClass)
+    .input("LuminosityClass", sql.VarChar, luminosityClass)
+    .input("Temperature", sql.Int, parseInt(temperature) || null)
+    .input("MassSolar", sql.Decimal, parseFloat(mass) || null)
     .query(
-      "UPDATE StarDetails SET SurfaceTemperature = @SurfaceTemperature, Luminosity = @Luminosity, Radius = @Radius, Mass = @Mass WHERE StarID = @StarID"
+      "UPDATE StarDetails SET SpectralClass = @SpectralClass, LuminosityClass = @LuminosityClass, Temperature = @Temperature, MassSolar = @MassSolar WHERE StarID = @StarID"
     );
   return result.rowsAffected[0];
 };
 
 // UPDATE exoplanet details
-const updateExoplanetDetails = async (exoplanetId, hostStarName, discoveryYear, orbitalPeriod, planetRadius) => {
+const updateExoplanetDetails = async (exoplanetId, hostStarId, orbitalPeriod, semiMajorAxis, eccentricity) => {
   const pool = getPool();
   const result = await pool
     .request()
     .input("ExoplanetID", sql.Int, exoplanetId)
-    .input("HostStarName", sql.VarChar, hostStarName)
-    .input("DiscoveryYear", sql.Int, discoveryYear)
-    .input("OrbitalPeriod", sql.Float, orbitalPeriod)
-    .input("Radius", sql.Float, planetRadius)
+    .input("HostStarID", sql.Int, hostStarId)
+    .input("OrbitalPeriodDays", sql.Decimal, parseFloat(orbitalPeriod) || null)
+    .input("SemiMajorAxisAU", sql.Decimal, parseFloat(semiMajorAxis) || null)
+    .input("Eccentricity", sql.Decimal, parseFloat(eccentricity) || null)
     .query(
-      "UPDATE ExoplanetDetails SET HostStarName = @HostStarName, DiscoveryYear = @DiscoveryYear, OrbitalPeriod = @OrbitalPeriod, Radius = @Radius WHERE ExoplanetID = @ExoplanetID"
+      "UPDATE ExoplanetDetails SET HostStarID = @HostStarID, OrbitalPeriodDays = @OrbitalPeriodDays, SemiMajorAxisAU = @SemiMajorAxisAU, Eccentricity = @Eccentricity WHERE ExoplanetID = @ExoplanetID"
     );
   return result.rowsAffected[0];
 };
