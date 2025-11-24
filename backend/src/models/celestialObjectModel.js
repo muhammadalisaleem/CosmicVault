@@ -29,8 +29,8 @@ const getAllCelestialObjects = async () => {
       FROM CelestialObjects co
       LEFT JOIN ObjectTypes ot ON co.TypeID = ot.TypeID
       LEFT JOIN Constellations c ON co.ConstellationID = c.ConstellationID
-      LEFT JOIN StarDetails sd ON co.ObjectID = sd.ObjectID
-      LEFT JOIN ExoplanetDetails ed ON co.ObjectID = ed.ObjectID
+      LEFT JOIN StarDetails sd ON co.ObjectID = sd.StarID
+      LEFT JOIN ExoplanetDetails ed ON co.ObjectID = ed.ExoplanetID
       ORDER BY co.ObjectID DESC
     `);
     console.log(`Fetched ${result.recordset.length} celestial objects`);
