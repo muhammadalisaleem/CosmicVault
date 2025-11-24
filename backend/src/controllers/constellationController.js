@@ -48,7 +48,7 @@ const getConstellationById = async (req, res) => {
 // CREATE constellation
 const createConstellation = async (req, res) => {
   try {
-    const { name, description, rightAscension, declination } = req.body;
+    const { name, description, abbreviation } = req.body;
 
     if (!name) {
       return res.status(400).json({
@@ -60,8 +60,7 @@ const createConstellation = async (req, res) => {
     const constellationId = await constellationModel.createConstellation(
       name,
       description || "",
-      rightAscension || "",
-      declination || ""
+      abbreviation || ""
     );
 
     res.status(201).json({
@@ -70,8 +69,7 @@ const createConstellation = async (req, res) => {
         ConstellationID: constellationId,
         name,
         description,
-        rightAscension,
-        declination,
+        abbreviation,
       },
       message: "Constellation created successfully",
     });
@@ -88,7 +86,7 @@ const createConstellation = async (req, res) => {
 const updateConstellation = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, rightAscension, declination } = req.body;
+    const { name, description, abbreviation } = req.body;
 
     if (!name) {
       return res.status(400).json({
@@ -101,8 +99,7 @@ const updateConstellation = async (req, res) => {
       id,
       name,
       description || "",
-      rightAscension || "",
-      declination || ""
+      abbreviation || ""
     );
 
     if (rowsAffected === 0) {
@@ -118,8 +115,7 @@ const updateConstellation = async (req, res) => {
         ConstellationID: id,
         name,
         description,
-        rightAscension,
-        declination,
+        abbreviation,
       },
       message: "Constellation updated successfully",
     });

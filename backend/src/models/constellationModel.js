@@ -20,32 +20,30 @@ const getConstellationById = async (constellationId) => {
 };
 
 // CREATE constellation
-const createConstellation = async (name, description, rightAscension, declination) => {
+const createConstellation = async (name, description, abbreviation) => {
   const pool = getPool();
   const result = await pool
     .request()
     .input("Name", sql.VarChar, name)
-    .input("Description", sql.VarChar, description)
-    .input("RightAscension", sql.VarChar, rightAscension)
-    .input("Declination", sql.VarChar, declination)
+    .input("Description", sql.Text, description)
+    .input("Abbreviation", sql.VarChar, abbreviation)
     .query(
-      "INSERT INTO Constellations (Name, Description, RightAscension, Declination) VALUES (@Name, @Description, @RightAscension, @Declination); SELECT SCOPE_IDENTITY() as ConstellationID"
+      "INSERT INTO Constellations (Name, Description, Abbreviation) VALUES (@Name, @Description, @Abbreviation); SELECT SCOPE_IDENTITY() as ConstellationID"
     );
   return result.recordset[0].ConstellationID;
 };
 
 // UPDATE constellation
-const updateConstellation = async (constellationId, name, description, rightAscension, declination) => {
+const updateConstellation = async (constellationId, name, description, abbreviation) => {
   const pool = getPool();
   const result = await pool
     .request()
     .input("ConstellationID", sql.Int, constellationId)
     .input("Name", sql.VarChar, name)
-    .input("Description", sql.VarChar, description)
-    .input("RightAscension", sql.VarChar, rightAscension)
-    .input("Declination", sql.VarChar, declination)
+    .input("Description", sql.Text, description)
+    .input("Abbreviation", sql.VarChar, abbreviation)
     .query(
-      "UPDATE Constellations SET Name = @Name, Description = @Description, RightAscension = @RightAscension, Declination = @Declination WHERE ConstellationID = @ConstellationID"
+      "UPDATE Constellations SET Name = @Name, Description = @Description, Abbreviation = @Abbreviation WHERE ConstellationID = @ConstellationID"
     );
   return result.rowsAffected[0];
 };

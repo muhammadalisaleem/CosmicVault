@@ -123,11 +123,11 @@ export const constellationAPI = {
   },
 
   // Create constellation
-  async create(name: string, description: string = '', rightAscension: string = '', declination: string = '') {
+  async create(name: string, description: string = '', abbreviation: string = '') {
     const response = await fetch(`${API_URL}/constellations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, description, rightAscension, declination })
+      body: JSON.stringify({ name, description, abbreviation })
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to create constellation');
@@ -135,11 +135,11 @@ export const constellationAPI = {
   },
 
   // Update constellation
-  async update(id: number, name: string, description: string = '', rightAscension: string = '', declination: string = '') {
+  async update(id: number, name: string, description: string = '', abbreviation: string = '') {
     const response = await fetch(`${API_URL}/constellations/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, description, rightAscension, declination })
+      body: JSON.stringify({ name, description, abbreviation })
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to update constellation');

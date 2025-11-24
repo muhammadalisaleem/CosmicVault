@@ -19,9 +19,7 @@ export function Constellations({ user, onNavigate, onLogout }: ConstellationsPro
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    abbreviation: '',
-    rightAscension: '',
-    declination: ''
+    abbreviation: ''
   });
   const [formLoading, setFormLoading] = useState(false);
 
@@ -64,15 +62,12 @@ export function Constellations({ user, onNavigate, onLogout }: ConstellationsPro
       await constellationAPI.create(
         formData.name,
         formData.description,
-        formData.rightAscension,
-        formData.declination
+        formData.abbreviation
       );
       setFormData({
         name: '',
         description: '',
-        abbreviation: '',
-        rightAscension: '',
-        declination: ''
+        abbreviation: ''
       });
       setShowAddModal(false);
       await loadConstellations();
@@ -180,17 +175,11 @@ export function Constellations({ user, onNavigate, onLogout }: ConstellationsPro
                 )}
 
                 {(constellation.RightAscension || constellation.Declination) && (
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    {constellation.RightAscension && (
-                      <div className="p-3 bg-[var(--cosmic-surface)] rounded-lg">
-                        <p className="text-sm text-gray-400 mb-1">RA</p>
-                        <p className="font-mono text-sm">{constellation.RightAscension}</p>
-                      </div>
                     )}
-                    {constellation.Declination && (
+                    {constellation.Abbreviation && (
                       <div className="p-3 bg-[var(--cosmic-surface)] rounded-lg">
-                        <p className="text-sm text-gray-400 mb-1">Dec</p>
-                        <p className="font-mono text-sm">{constellation.Declination}</p>
+                        <p className="text-sm text-gray-400 mb-1">Abbr.</p>
+                        <p className="font-mono text-sm">{constellation.Abbreviation}</p>
                       </div>
                     )}
                   </div>
