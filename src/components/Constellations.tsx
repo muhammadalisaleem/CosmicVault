@@ -174,14 +174,10 @@ export function Constellations({ user, onNavigate, onLogout }: ConstellationsPro
                   </p>
                 )}
 
-                {(constellation.RightAscension || constellation.Declination) && (
-                    )}
-                    {constellation.Abbreviation && (
-                      <div className="p-3 bg-[var(--cosmic-surface)] rounded-lg">
-                        <p className="text-sm text-gray-400 mb-1">Abbr.</p>
-                        <p className="font-mono text-sm">{constellation.Abbreviation}</p>
-                      </div>
-                    )}
+                {constellation.Abbreviation && (
+                  <div className="p-3 bg-[var(--cosmic-surface)] rounded-lg">
+                    <p className="text-sm text-gray-400 mb-1">Abbr.</p>
+                    <p className="font-mono text-sm">{constellation.Abbreviation}</p>
                   </div>
                 )}
 
