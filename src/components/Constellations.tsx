@@ -16,6 +16,14 @@ export function Constellations({ user, onNavigate, onLogout }: ConstellationsPro
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    abbreviation: '',
+    rightAscension: '',
+    declination: ''
+  });
+  const [formLoading, setFormLoading] = useState(false);
 
   // Load constellations from API on mount
   useEffect(() => {
@@ -43,6 +51,40 @@ export function Constellations({ user, onNavigate, onLogout }: ConstellationsPro
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete constellation');
     }
+  };
+
+  const handleAddConstellation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name) {
+      setError('Constellation name is required');
+      return;
+    }
+    try {
+      setFormLoading(true);
+      await constellationAPI.create(
+        formData.name,
+        formData.description,
+        formData.rightAscension,
+        formData.declination
+      );
+      setFormData({
+        name: '',
+        description: '',
+        abbreviation: '',
+        rightAscension: '',
+        declination: ''
+      });
+      setShowAddModal(false);
+      await loadConstellations();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add constellation');
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const handleFormChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const filteredConstellations = constellations.filter(constellation => {
@@ -185,20 +227,30 @@ export function Constellations({ user, onNavigate, onLogout }: ConstellationsPro
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
           <div className="cosmic-card p-8 max-w-2xl w-full cosmic-glow">
             <h3 className="mb-6">Add New Constellation</h3>
-            <form className="space-y-6">
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded text-red-300 text-sm">
+                {error}
+              </div>
+            )}
+            <form onSubmit={handleAddConstellation} className="space-y-6">
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm mb-2 text-gray-300">Name</label>
+                  <label className="block text-sm mb-2 text-gray-300">Name *</label>
                   <input
                     type="text"
+                    value={formData.name}
+                    onChange={(e) => handleFormChange('name', e.target.value)}
                     className="w-full px-4 py-3 bg-[var(--cosmic-surface)] border border-[var(--cosmic-border)] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
                     placeholder="e.g., Andromeda"
+                    required
                   />
                 </div>
                 <div>
                   <label className="block text-sm mb-2 text-gray-300">Abbreviation</label>
                   <input
                     type="text"
+                    value={formData.abbreviation}
+                    onChange={(e) => handleFormChange('abbreviation', e.target.value)}
                     className="w-full px-4 py-3 bg-[var(--cosmic-surface)] border border-[var(--cosmic-border)] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
                     placeholder="e.g., And"
                   />
@@ -208,6 +260,8 @@ export function Constellations({ user, onNavigate, onLogout }: ConstellationsPro
                 <label className="block text-sm mb-2 text-gray-300">Description</label>
                 <textarea
                   rows={4}
+                  value={formData.description}
+                  onChange={(e) => handleFormChange('description', e.target.value)}
                   className="w-full px-4 py-3 bg-[var(--cosmic-surface)] border border-[var(--cosmic-border)] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors resize-none"
                   placeholder="Description of the constellation..."
                 />
@@ -215,9 +269,10 @@ export function Constellations({ user, onNavigate, onLogout }: ConstellationsPro
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-all cosmic-glow hover:cosmic-glow-strong"
+                  disabled={formLoading}
+                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-lg transition-all cosmic-glow hover:cosmic-glow-strong"
                 >
-                  Add Constellation
+                  {formLoading ? 'Adding...' : 'Add Constellation'}
                 </button>
                 <button
                   type="button"
