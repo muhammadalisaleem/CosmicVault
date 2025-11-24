@@ -13,23 +13,23 @@ const getAllCelestialObjects = async () => {
       c.Name as ConstellationName,
       co.RightAscension,
       co.Declination,
-      co.Magnitude,
-      co.Distance,
+      co.DistanceLightYears as Distance,
+      co.ApparentMagnitude,
       sd.StarID,
-      sd.SurfaceTemperature,
-      sd.Luminosity,
-      sd.Radius,
-      sd.Mass,
+      sd.SpectralClass,
+      sd.LuminosityClass,
+      sd.Temperature,
+      sd.MassSolar as Mass,
       ed.ExoplanetID,
-      ed.HostStarName,
-      ed.DiscoveryYear,
-      ed.OrbitalPeriod,
-      ed.Radius as PlanetRadius
+      ed.HostStarID,
+      ed.OrbitalPeriodDays as OrbitalPeriod,
+      ed.SemiMajorAxisAU as SemiMajorAxis,
+      ed.Eccentricity
     FROM CelestialObjects co
     LEFT JOIN ObjectTypes ot ON co.TypeID = ot.TypeID
     LEFT JOIN Constellations c ON co.ConstellationID = c.ConstellationID
-    LEFT JOIN StarDetails sd ON co.ObjectID = sd.ObjectID
-    LEFT JOIN ExoplanetDetails ed ON co.ObjectID = ed.ObjectID
+    LEFT JOIN StarDetails sd ON co.ObjectID = sd.StarID
+    LEFT JOIN ExoplanetDetails ed ON co.ObjectID = ed.ExoplanetID
     ORDER BY co.ObjectID DESC
   `);
   return result.recordset;
@@ -51,22 +51,22 @@ const getCelestialObjectById = async (objectId) => {
         c.Name as ConstellationName,
         co.RightAscension,
         co.Declination,
-        co.Magnitude,
-        co.Distance,
+        co.DistanceLightYears as Distance,
+        co.ApparentMagnitude,
         sd.StarID,
-        sd.SurfaceTemperature,
-        sd.Luminosity,
-        sd.Radius,
-        sd.Mass,
+        sd.SpectralClass,
+        sd.LuminosityClass,
+        sd.Temperature,
+        sd.MassSolar as Mass,
         ed.ExoplanetID,
-        ed.HostStarName,
-        ed.DiscoveryYear,
-        ed.OrbitalPeriod,
-        ed.Radius as PlanetRadius
+        ed.HostStarID,
+        ed.OrbitalPeriodDays as OrbitalPeriod,
+        ed.SemiMajorAxisAU as SemiMajorAxis,
+        ed.Eccentricity
       FROM CelestialObjects co
       LEFT JOIN ObjectTypes ot ON co.TypeID = ot.TypeID
       LEFT JOIN Constellations c ON co.ConstellationID = c.ConstellationID
-      LEFT JOIN StarDetails sd ON co.ObjectID = sd.ObjectID
+      LEFT JOIN StarDetails sd ON co.ObjectID = sd.StarID
       LEFT JOIN ExoplanetDetails ed ON co.ObjectID = ed.ObjectID
       WHERE co.ObjectID = @ObjectID
     `);
@@ -81,44 +81,44 @@ const createCelestialObject = async (name, typeId, constellationId, ra, dec, mag
     .input("Name", sql.VarChar, name)
     .input("TypeID", sql.Int, typeId)
     .input("ConstellationID", sql.Int, constellationId)
-    .input("RightAscension", sql.VarChar, ra)
-    .input("Declination", sql.VarChar, dec)
-    .input("Magnitude", sql.Float, magnitude)
-    .input("Distance", sql.Float, distance)
+    .input("RightAscension", sql.Decimal, parseFloat(ra) || 0)
+    .input("Declination", sql.Decimal, parseFloat(dec) || 0)
+    .input("ApparentMagnitude", sql.Decimal, parseFloat(magnitude) || null)
+    .input("DistanceLightYears", sql.Decimal, parseFloat(distance) || null)
     .query(
-      "INSERT INTO CelestialObjects (Name, TypeID, ConstellationID, RightAscension, Declination, Magnitude, Distance) VALUES (@Name, @TypeID, @ConstellationID, @RightAscension, @Declination, @Magnitude, @Distance); SELECT SCOPE_IDENTITY() as ObjectID"
+      "INSERT INTO CelestialObjects (Name, TypeID, ConstellationID, RightAscension, Declination, ApparentMagnitude, DistanceLightYears) VALUES (@Name, @TypeID, @ConstellationID, @RightAscension, @Declination, @ApparentMagnitude, @DistanceLightYears); SELECT SCOPE_IDENTITY() as ObjectID"
     );
   return result.recordset[0].ObjectID;
 };
 
 // CREATE star details
-const createStarDetails = async (objectId, surfaceTemp, luminosity, radius, mass) => {
+const createStarDetails = async (objectId, spectralClass, luminosityClass, temperature, mass) => {
   const pool = getPool();
   const result = await pool
     .request()
-    .input("ObjectID", sql.Int, objectId)
-    .input("SurfaceTemperature", sql.Float, surfaceTemp)
-    .input("Luminosity", sql.Float, luminosity)
-    .input("Radius", sql.Float, radius)
-    .input("Mass", sql.Float, mass)
+    .input("StarID", sql.Int, objectId)
+    .input("SpectralClass", sql.VarChar, spectralClass)
+    .input("LuminosityClass", sql.VarChar, luminosityClass)
+    .input("Temperature", sql.Int, parseInt(temperature) || null)
+    .input("MassSolar", sql.Decimal, parseFloat(mass) || null)
     .query(
-      "INSERT INTO StarDetails (ObjectID, SurfaceTemperature, Luminosity, Radius, Mass) VALUES (@ObjectID, @SurfaceTemperature, @Luminosity, @Radius, @Mass); SELECT SCOPE_IDENTITY() as StarID"
+      "INSERT INTO StarDetails (StarID, SpectralClass, LuminosityClass, Temperature, MassSolar) VALUES (@StarID, @SpectralClass, @LuminosityClass, @Temperature, @MassSolar); SELECT SCOPE_IDENTITY() as StarID"
     );
   return result.recordset[0].StarID;
 };
 
 // CREATE exoplanet details
-const createExoplanetDetails = async (objectId, hostStarName, discoveryYear, orbitalPeriod, planetRadius) => {
+const createExoplanetDetails = async (objectId, hostStarId, orbitalPeriod, semiMajorAxis, eccentricity) => {
   const pool = getPool();
   const result = await pool
     .request()
-    .input("ObjectID", sql.Int, objectId)
-    .input("HostStarName", sql.VarChar, hostStarName)
-    .input("DiscoveryYear", sql.Int, discoveryYear)
-    .input("OrbitalPeriod", sql.Float, orbitalPeriod)
-    .input("Radius", sql.Float, planetRadius)
+    .input("ExoplanetID", sql.Int, objectId)
+    .input("HostStarID", sql.Int, hostStarId)
+    .input("OrbitalPeriodDays", sql.Decimal, parseFloat(orbitalPeriod) || null)
+    .input("SemiMajorAxisAU", sql.Decimal, parseFloat(semiMajorAxis) || null)
+    .input("Eccentricity", sql.Decimal, parseFloat(eccentricity) || null)
     .query(
-      "INSERT INTO ExoplanetDetails (ObjectID, HostStarName, DiscoveryYear, OrbitalPeriod, Radius) VALUES (@ObjectID, @HostStarName, @DiscoveryYear, @OrbitalPeriod, @Radius); SELECT SCOPE_IDENTITY() as ExoplanetID"
+      "INSERT INTO ExoplanetDetails (ExoplanetID, HostStarID, OrbitalPeriodDays, SemiMajorAxisAU, Eccentricity) VALUES (@ExoplanetID, @HostStarID, @OrbitalPeriodDays, @SemiMajorAxisAU, @Eccentricity); SELECT SCOPE_IDENTITY() as ExoplanetID"
     );
   return result.recordset[0].ExoplanetID;
 };
@@ -132,12 +132,12 @@ const updateCelestialObject = async (objectId, name, typeId, constellationId, ra
     .input("Name", sql.VarChar, name)
     .input("TypeID", sql.Int, typeId)
     .input("ConstellationID", sql.Int, constellationId)
-    .input("RightAscension", sql.VarChar, ra)
-    .input("Declination", sql.VarChar, dec)
-    .input("Magnitude", sql.Float, magnitude)
-    .input("Distance", sql.Float, distance)
+    .input("RightAscension", sql.Decimal, parseFloat(ra) || 0)
+    .input("Declination", sql.Decimal, parseFloat(dec) || 0)
+    .input("ApparentMagnitude", sql.Decimal, parseFloat(magnitude) || null)
+    .input("DistanceLightYears", sql.Decimal, parseFloat(distance) || null)
     .query(
-      "UPDATE CelestialObjects SET Name = @Name, TypeID = @TypeID, ConstellationID = @ConstellationID, RightAscension = @RightAscension, Declination = @Declination, Magnitude = @Magnitude, Distance = @Distance WHERE ObjectID = @ObjectID"
+      "UPDATE CelestialObjects SET Name = @Name, TypeID = @TypeID, ConstellationID = @ConstellationID, RightAscension = @RightAscension, Declination = @Declination, ApparentMagnitude = @ApparentMagnitude, DistanceLightYears = @DistanceLightYears WHERE ObjectID = @ObjectID"
     );
   return result.rowsAffected[0];
 };

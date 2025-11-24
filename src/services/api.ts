@@ -1,7 +1,7 @@
 // API service for Cosmic Vault backend
 // Base URL for the backend API
 
-const API_URL = 'http://localhost:3000';
+const API_URL = 'http://localhost:5173';
 
 // ============ USERS ============
 

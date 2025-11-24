@@ -12,8 +12,8 @@ const getAllObservationLogs = async () => {
       co.Name as ObjectName,
       ol.ObservationDate,
       ol.Notes,
-      ol.Equipment,
-      ol.SeeingCondition
+      ol.EquipmentUsed as Equipment,
+      ol.SeeingConditions as SeeingCondition
     FROM ObservationLogs ol
     LEFT JOIN Users u ON ol.UserID = u.UserID
     LEFT JOIN CelestialObjects co ON ol.ObjectID = co.ObjectID
@@ -37,8 +37,8 @@ const getObservationLogById = async (logId) => {
         co.Name as ObjectName,
         ol.ObservationDate,
         ol.Notes,
-        ol.Equipment,
-        ol.SeeingCondition
+        ol.EquipmentUsed as Equipment,
+        ol.SeeingConditions as SeeingCondition
       FROM ObservationLogs ol
       LEFT JOIN Users u ON ol.UserID = u.UserID
       LEFT JOIN CelestialObjects co ON ol.ObjectID = co.ObjectID
@@ -59,7 +59,7 @@ const createObservationLog = async (userId, objectId, observationDate, notes, eq
     .input("Equipment", sql.VarChar, equipment)
     .input("SeeingCondition", sql.VarChar, seeingCondition)
     .query(
-      "INSERT INTO ObservationLogs (UserID, ObjectID, ObservationDate, Notes, Equipment, SeeingCondition) VALUES (@UserID, @ObjectID, @ObservationDate, @Notes, @Equipment, @SeeingCondition); SELECT SCOPE_IDENTITY() as LogID"
+      "INSERT INTO ObservationLogs (UserID, ObjectID, ObservationDate, Notes, EquipmentUsed, SeeingConditions) VALUES (@UserID, @ObjectID, @ObservationDate, @Notes, @Equipment, @SeeingCondition); SELECT SCOPE_IDENTITY() as LogID"
     );
   return result.recordset[0].LogID;
 };
@@ -77,7 +77,7 @@ const updateObservationLog = async (logId, userId, objectId, observationDate, no
     .input("Equipment", sql.VarChar, equipment)
     .input("SeeingCondition", sql.VarChar, seeingCondition)
     .query(
-      "UPDATE ObservationLogs SET UserID = @UserID, ObjectID = @ObjectID, ObservationDate = @ObservationDate, Notes = @Notes, Equipment = @Equipment, SeeingCondition = @SeeingCondition WHERE LogID = @LogID"
+      "UPDATE ObservationLogs SET UserID = @UserID, ObjectID = @ObjectID, ObservationDate = @ObservationDate, Notes = @Notes, EquipmentUsed = @Equipment, SeeingConditions = @SeeingCondition WHERE LogID = @LogID"
     );
   return result.rowsAffected[0];
 };
