@@ -3,36 +3,16 @@ const { getPool, sql } = require("../config/database");
 // GET all celestial objects with joins
 const getAllCelestialObjects = async () => {
   const pool = getPool();
-  const result = await pool.request().query(`
-    SELECT 
-      co.ObjectID,
-      co.Name,
-      co.TypeID,
-      ot.TypeName,
-      co.ConstellationID,
-      c.Name as ConstellationName,
-      co.RightAscension,
-      co.Declination,
-      co.DistanceLightYears as Distance,
-      co.ApparentMagnitude,
-      sd.StarID,
-      sd.SpectralClass,
-      sd.LuminosityClass,
-      sd.Temperature,
-      sd.MassSolar as Mass,
-      ed.ExoplanetID,
-      ed.HostStarID,
-      ed.OrbitalPeriodDays as OrbitalPeriod,
-      ed.SemiMajorAxisAU as SemiMajorAxis,
-      ed.Eccentricity
-    FROM CelestialObjects co
-    LEFT JOIN ObjectTypes ot ON co.TypeID = ot.TypeID
-    LEFT JOIN Constellations c ON co.ConstellationID = c.ConstellationID
-    LEFT JOIN StarDetails sd ON co.ObjectID = sd.ObjectID
-    LEFT JOIN ExoplanetDetails ed ON co.ObjectID = ed.ObjectID
-    ORDER BY co.ObjectID DESC
-  `);
-  return result.recordset;
+  try {
+    const result = await pool.request().query(`SELECT COUNT(*) as cnt FROM CelestialObjects`);
+    console.log("Total objects:", result.recordset[0].cnt);
+    
+    const result2 = await pool.request().query(`SELECT TOP 5 ObjectID, Name FROM CelestialObjects ORDER BY ObjectID DESC`);
+    return result2.recordset;
+  } catch (err) {
+    console.error("Query error:", err);
+    throw err;
+  }
 };
 
 // GET celestial object by ID with joins
