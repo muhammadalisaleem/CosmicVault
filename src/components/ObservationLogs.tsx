@@ -25,13 +25,18 @@ export function ObservationLogs({ user, onNavigate, onLogout }: ObservationLogsP
   // Load logs from API on mount
   useEffect(() => {
     loadLogs();
-  }, []);
+  }, [user?.id]);
 
   const loadLogs = async () => {
     setLoading(true);
     setError('');
     try {
-      const logsData = await logAPI.getAll();
+      if (!user?.id) {
+        setError('User not logged in');
+        setLogs([]);
+        return;
+      }
+      const logsData = await logAPI.getByUser(user.id);
       setLogs(logsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load logs');

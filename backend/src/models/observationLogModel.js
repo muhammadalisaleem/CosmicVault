@@ -22,6 +22,32 @@ const getAllObservationLogs = async () => {
   return result.recordset;
 };
 
+// GET observation logs by user ID with joins
+const getObservationLogsByUser = async (userId) => {
+  const pool = getPool();
+  const result = await pool
+    .request()
+    .input("UserID", sql.Int, userId)
+    .query(`
+      SELECT 
+        ol.LogID,
+        ol.UserID,
+        u.Username,
+        ol.ObjectID,
+        co.Name as ObjectName,
+        ol.ObservationDate,
+        ol.Notes,
+        ol.EquipmentUsed as Equipment,
+        ol.SeeingConditions as SeeingCondition
+      FROM ObservationLogs ol
+      LEFT JOIN Users u ON ol.UserID = u.UserID
+      LEFT JOIN CelestialObjects co ON ol.ObjectID = co.ObjectID
+      WHERE ol.UserID = @UserID
+      ORDER BY ol.ObservationDate DESC
+    `);
+  return result.recordset;
+};
+
 // GET observation log by ID with joins
 const getObservationLogById = async (logId) => {
   const pool = getPool();
@@ -94,6 +120,7 @@ const deleteObservationLog = async (logId) => {
 
 module.exports = {
   getAllObservationLogs,
+  getObservationLogsByUser,
   getObservationLogById,
   createObservationLog,
   updateObservationLog,

@@ -277,6 +277,14 @@ export const logAPI = {
     return data.data;
   },
 
+  // Get observation logs for a specific user
+  async getByUser(userId: number): Promise<ObservationLog[]> {
+    const response = await fetch(`${API_URL}/logs/user/${userId}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch user logs');
+    return data.data;
+  },
+
   // Get observation log by ID (with details)
   async getById(id: number): Promise<ObservationLog> {
     const response = await fetch(`${API_URL}/logs/${id}`);

@@ -5,6 +5,9 @@ const observationLogController = require("../controllers/observationLogControlle
 // GET all observation logs
 router.get("/", observationLogController.getAllObservationLogs);
 
+// GET observation logs by user ID
+router.get("/user/:userId", observationLogController.getObservationLogsByUser);
+
 // GET observation log by ID
 router.get("/:id", observationLogController.getObservationLogById);
 

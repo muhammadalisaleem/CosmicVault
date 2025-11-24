@@ -18,6 +18,25 @@ const getAllObservationLogs = async (req, res) => {
   }
 };
 
+// GET observation logs by user
+const getObservationLogsByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const logs = await observationLogModel.getObservationLogsByUser(userId);
+    res.json({
+      success: true,
+      data: logs,
+      message: "User observation logs retrieved successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving user observation logs",
+      error: error.message,
+    });
+  }
+};
+
 // GET observation log by ID
 const getObservationLogById = async (req, res) => {
   try {
@@ -152,6 +171,7 @@ const deleteObservationLog = async (req, res) => {
 
 module.exports = {
   getAllObservationLogs,
+  getObservationLogsByUser,
   getObservationLogById,
   createObservationLog,
   updateObservationLog,
