@@ -36,8 +36,8 @@ export function CelestialObjectForm({ user, onNavigate, onLogout, editingId }: C
     semiMajorAxis: '',
     eccentricity: ''
   });
-  const [types, setTypes] = useState<Array<{TypeID: number; Name: string}>>([]);
-  const [constellations, setConstellations] = useState<Array<{ConstellationID: number; Name: string}>>([]);
+  const [types, setTypes] = useState<Array<{TypeID: number; TypeName: string}>>([]);
+  const [constellations, setConstellations] = useState<Array<{ConstellationID: number; Name?: string}>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -165,7 +165,7 @@ export function CelestialObjectForm({ user, onNavigate, onLogout, editingId }: C
                     required
                   >
                     {types.map(type => (
-                      <option key={type.TypeID} value={type.Name}>{type.Name}</option>
+                      <option key={type.TypeID} value={type.TypeName}>{type.TypeName}</option>
                     ))}
                   </select>
                 </div>
