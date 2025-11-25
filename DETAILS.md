@@ -3,32 +3,6 @@
 ## Overview
 Cosmic Vault is a full-stack astronomy observation application with React frontend and Node.js/Express backend connected to MSSQL database.
 
-## Quick Start
-
-### Prerequisites
-- Node.js (v18+)
-- MSSQL Server with database `CosmicVault`
-- npm or yarn
-
-### Backend Setup
-```bash
-cd backend
-npm install
-npm start
-```
-- Runs on `http://localhost:5173`
-- Database: MSSQL (CosmicVault)
-- 25 REST API endpoints ready
-
-### Frontend Setup
-```bash
-npm install
-npm run dev
-```
-- Runs on `http://localhost:3001` (or next available port)
-- React 18 + TypeScript + Tailwind CSS
-- Fully integrated with backend API
-
 ## Architecture
 
 ### Frontend Components
@@ -123,17 +97,6 @@ npm run dev
 - `PUT /logs/:id` - Update log
 - `DELETE /logs/:id` - Delete log
 
-## Database Configuration
-
-**File**: `backend/.env`
-```
-DB_SERVER=localhost
-DB_USER=sa
-DB_PASS=StrongPassword@123
-DB_NAME=CosmicVault
-PORT=5173
-NODE_ENV=development
-```
 
 ## Features Implemented
 
@@ -200,19 +163,7 @@ NODE_ENV=development
 - Parameterized queries for security
 - CASCADE delete operations
 
-## Common Issues & Solutions
 
-### Port Already in Use
-If port 5173 is in use, backend will fail. Kill the process:
-```bash
-Get-Process node | Stop-Process -Force
-```
-
-### Frontend Port
-Frontend uses port 3001 if 3000 is taken. Check terminal output.
-
-### Database Connection
-Ensure MSSQL is running and credentials in `.env` are correct.
 
 ## Project Structure
 ```
@@ -235,13 +186,6 @@ CosmicVault_v3.0/
 └── tsconfig.json
 ```
 
-## Git History
-
-Key commits:
-1. `094d1f3` - Fix JOIN conditions in celestial objects
-2. `1515f94` - Align constellation schema with database
-3. `ceb635c` - Add user-specific observation management
-4. `bd56cee` - Optimize Dashboard and UserProfile
 
 ## Support
 

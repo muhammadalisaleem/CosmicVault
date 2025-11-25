@@ -21,6 +21,7 @@ export function UserProfile({ user, onNavigate, onLogout }: UserProfileProps) {
     observationHours: 0
   });
   const [loading, setLoading] = useState(true);
+  const [observationCategories, setObservationCategories] = useState<Array<{name: string; value: number; color: string}>>([]);
 
   useEffect(() => {
     loadUserStats();
@@ -50,6 +51,50 @@ export function UserProfile({ user, onNavigate, onLogout }: UserProfileProps) {
         favoriteConstellations: 12,
         observationHours: hours
       });
+
+      // Compute Most Observed Categories from user's logs and the objects' TypeName
+      try {
+        const objById: Record<number, any> = {};
+        objects.forEach((o: any) => {
+          if (o.ObjectID != null) objById[o.ObjectID] = o;
+        });
+
+        const counts: Record<string, number> = {};
+        logs.forEach((log: any) => {
+          const obj = log.ObjectID ? objById[log.ObjectID] : null;
+          const typeName = obj?.TypeName || 'Unknown';
+          counts[typeName] = (counts[typeName] || 0) + 1;
+        });
+
+        const colorMap: Record<string, string> = {
+          'Star': '#fbbf24',
+          'Galaxy': '#8b5cf6',
+          'Nebula': '#06b6d4',
+          'Exoplanet': '#ec4899',
+          'Black Hole': '#ef4444',
+          'Unknown': '#64748b'
+        };
+
+        const categories = Object.keys(counts).map((k) => ({
+          name: k,
+          value: counts[k],
+          color: colorMap[k] || '#64748b'
+        })).sort((a, b) => b.value - a.value);
+
+        // If there are no logs, show empty defaults (so chart doesn't crash)
+        if (categories.length === 0) {
+          setObservationCategories([
+            { name: 'Stars', value: 0, color: '#fbbf24' },
+            { name: 'Galaxies', value: 0, color: '#8b5cf6' },
+            { name: 'Nebulae', value: 0, color: '#06b6d4' },
+            { name: 'Exoplanets', value: 0, color: '#ec4899' }
+          ]);
+        } else {
+          setObservationCategories(categories);
+        }
+      } catch (e) {
+        console.error('Failed to compute observation categories', e);
+      }
     } catch (err) {
       console.error('Failed to load stats:', err);
     } finally {
@@ -57,12 +102,7 @@ export function UserProfile({ user, onNavigate, onLogout }: UserProfileProps) {
     }
   };
 
-  const observationCategories = [
-    { name: 'Stars', value: 18, color: '#fbbf24' },
-    { name: 'Galaxies', value: 15, color: '#8b5cf6' },
-    { name: 'Nebulae', value: 8, color: '#06b6d4' },
-    { name: 'Exoplanets', value: 6, color: '#ec4899' },
-  ];
+  
 
   const recentActivity = [
     { date: '2024-06-15', action: 'Observed Andromeda Galaxy', type: 'observation' },

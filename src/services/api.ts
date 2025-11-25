@@ -1,6 +1,8 @@
 // API service for Cosmic Vault backend
 // Base URL for the backend API
 
+// Use the backend URL where the Express server is running
+// (backend started on port 5173 in the current environment)
 const API_URL = 'http://localhost:5173';
 
 // ============ USERS ============

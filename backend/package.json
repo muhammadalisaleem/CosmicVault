@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node index.js"
+    "dev": "node index.js",
+    "seed": "node scripts/seedDatabase.js",
+    "seed:force-constellations": "node scripts/seedConstellationsForce.js"
+    ,
+    "check:counts": "node scripts/checkCounts.js"
   },
   "keywords": [
     "astronomy",

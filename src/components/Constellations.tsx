@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import { Search, Plus, Edit, Trash2, Globe, AlertCircle } from 'lucide-react';
 import type { Page, User } from '../App';
 import { constellationAPI } from '../services/api';
+import localConstellations from '../data/constellations.json';
 
 interface ConstellationsProps {
   user: User | null;
@@ -33,9 +34,16 @@ export function Constellations({ user, onNavigate, onLogout }: ConstellationsPro
     setError('');
     try {
       const data = await constellationAPI.getAll();
-      setConstellations(data);
+      // If API returns an empty array, fall back to local data
+      if (!data || (Array.isArray(data) && data.length === 0)) {
+        setConstellations(localConstellations as any[]);
+      } else {
+        setConstellations(data);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load constellations');
+      // Use local fallback when API fails
+      setConstellations(localConstellations as any[]);
+      setError('Failed to load constellations from API — using local fallback');
     } finally {
       setLoading(false);
     }
