@@ -20,10 +20,10 @@ const connectPool = async () => {
   try {
     pool = new sql.ConnectionPool(dbConfig);
     await pool.connect();
-    console.log("✅ MSSQL Connection Pool established");
+    console.log("MSSQL Connection Pool established");
     return pool;
   } catch (error) {
-    console.error("❌ Database connection failed:", error);
+    console.error("Database connection failed:", error);
     process.exit(1);
   }
 };
