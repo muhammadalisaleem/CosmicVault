@@ -48,6 +48,7 @@ const getConstellationById = async (req, res) => {
 // CREATE constellation
 const createConstellation = async (req, res) => {
   try {
+    console.log('Received constellation creation request:', req.body);
     const { name, description, abbreviation } = req.body;
 
     if (!name) {
@@ -57,12 +58,14 @@ const createConstellation = async (req, res) => {
       });
     }
 
+    console.log('Creating constellation with:', { name, description, abbreviation });
     const constellationId = await constellationModel.createConstellation(
       name,
       description || "",
       abbreviation || ""
     );
 
+    console.log('Constellation created with ID:', constellationId);
     res.status(201).json({
       success: true,
       data: {
@@ -74,6 +77,7 @@ const createConstellation = async (req, res) => {
       message: "Constellation created successfully",
     });
   } catch (error) {
+    console.error('Error creating constellation:', error);
     res.status(500).json({
       success: false,
       message: "Error creating constellation",

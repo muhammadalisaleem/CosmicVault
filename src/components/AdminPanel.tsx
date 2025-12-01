@@ -21,6 +21,9 @@ export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [newTypeName, setNewTypeName] = useState('');
   const [newTypeDescription, setNewTypeDescription] = useState('');
+  const [newConstellationName, setNewConstellationName] = useState('');
+  const [newConstellationAbbr, setNewConstellationAbbr] = useState('');
+  const [newConstellationDesc, setNewConstellationDesc] = useState('');
 
   useEffect(() => {
     loadData();
@@ -37,9 +40,9 @@ export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
       ]);
       setObjectTypes(typesData.map((t: any) => ({
         id: t.TypeID,
-        name: t.Name,
-        description: 'Object type',
-        count: objData.filter((o: any) => o.TypeName === t.Name).length
+        name: t.TypeName,
+        description: t.Description || 'Object type',
+        count: objData.filter((o: any) => o.TypeName === t.TypeName).length
       })));
       setConstellations(constData);
       setUsers(usersData);
@@ -72,6 +75,19 @@ export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
       } catch (err) {
         console.error('Failed to delete user:', err);
         alert('Failed to delete user. Please try again.');
+      }
+    }
+  };
+
+  const deleteConstellation = async (id: number) => {
+    if (confirm('Delete this constellation? This will set ConstellationID to NULL for all associated objects.')) {
+      try {
+        await constellationAPI.delete(id);
+        setConstellations(constellations.filter(c => c.ConstellationID !== id));
+        await loadData(); // Reload to update counts
+      } catch (err) {
+        console.error('Failed to delete constellation:', err);
+        alert('Failed to delete constellation. Please try again.');
       }
     }
   };
@@ -110,6 +126,30 @@ export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
     } catch (err) {
       console.error('Failed to create type:', err);
       alert('Failed to create object type. Please try again.');
+    }
+  };
+
+  const handleAddConstellation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newConstellationName.trim()) {
+      alert('Please enter a constellation name');
+      return;
+    }
+    
+    try {
+      await constellationAPI.create(
+        newConstellationName,
+        newConstellationDesc,
+        newConstellationAbbr
+      );
+      setNewConstellationName('');
+      setNewConstellationAbbr('');
+      setNewConstellationDesc('');
+      setShowAddModal(false);
+      await loadData(); // Reload data to show new constellation
+    } catch (err) {
+      console.error('Failed to create constellation:', err);
+      alert(`Failed to create constellation: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -400,24 +440,55 @@ export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
           {/* Constellations Tab */}
           {activeTab === 'constellations' && (
             <div>
-              <div className="mb-6 cosmic-card p-6">
-                <p className="text-gray-300">
-                  Displaying all {constellations.length} official IAU constellations. These are read-only system data.
-                </p>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <p className="text-gray-400">Manage the 88 IAU constellations</p>
+                </div>
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-all cosmic-glow hover:cosmic-glow-strong"
+                >
+                  <Plus className="w-5 h-5" />
+                  Add Constellation
+                </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {constellations.map((constellation: any) => (
-                  <div key={constellation.ConstellationID} className="cosmic-card p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="text-lg">{constellation.Name}</h4>
-                      <span className="px-2 py-1 bg-cyan-500/20 text-cyan-300 rounded text-xs border border-cyan-500/30">
-                        {constellation.Abbreviation}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-400 line-clamp-2">{constellation.Description}</p>
-                  </div>
-                ))}
+              <div className="cosmic-card">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-[var(--cosmic-border)]">
+                      <th className="text-left p-4 text-gray-400">ID</th>
+                      <th className="text-left p-4 text-gray-400">Name</th>
+                      <th className="text-left p-4 text-gray-400">Abbreviation</th>
+                      <th className="text-left p-4 text-gray-400">Description</th>
+                      <th className="text-right p-4 text-gray-400">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {constellations.map((constellation: any) => (
+                      <tr key={constellation.ConstellationID} className="border-b border-[var(--cosmic-border)] hover:bg-[var(--cosmic-surface)] transition-colors">
+                        <td className="p-4 text-gray-400">{constellation.ConstellationID}</td>
+                        <td className="p-4">{constellation.Name}</td>
+                        <td className="p-4">
+                          <span className="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-md border border-cyan-500/30">
+                            {constellation.Abbreviation}
+                          </span>
+                        </td>
+                        <td className="p-4 text-gray-300 max-w-md truncate">{constellation.Description}</td>
+                        <td className="p-4">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => deleteConstellation(constellation.ConstellationID)}
+                              className="p-2 bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white rounded-lg transition-all border border-red-600/30"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
@@ -542,7 +613,7 @@ export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
       )}
 
       {/* Add Object Type Modal */}
-      {showAddModal && (
+      {showAddModal && activeTab === 'types' && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
           <div className="cosmic-card p-8 max-w-md w-full cosmic-glow">
             <h3 className="mb-6">Add New Object Type</h3>
@@ -581,6 +652,71 @@ export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
                     setShowAddModal(false);
                     setNewTypeName('');
                     setNewTypeDescription('');
+                  }}
+                  className="flex-1 py-3 bg-transparent border border-[var(--cosmic-border)] hover:bg-[var(--cosmic-card)] text-white rounded-lg transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Constellation Modal */}
+      {showAddModal && activeTab === 'constellations' && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
+          <div className="cosmic-card p-8 max-w-2xl w-full cosmic-glow">
+            <h3 className="mb-6">Add New Constellation</h3>
+            <form className="space-y-6" onSubmit={handleAddConstellation}>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm mb-2 text-gray-300">Name *</label>
+                  <input
+                    type="text"
+                    value={newConstellationName}
+                    onChange={(e) => setNewConstellationName(e.target.value)}
+                    className="w-full px-4 py-3 bg-[var(--cosmic-surface)] border border-[var(--cosmic-border)] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
+                    placeholder="e.g., Andromeda"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm mb-2 text-gray-300">Abbreviation</label>
+                  <input
+                    type="text"
+                    value={newConstellationAbbr}
+                    onChange={(e) => setNewConstellationAbbr(e.target.value)}
+                    className="w-full px-4 py-3 bg-[var(--cosmic-surface)] border border-[var(--cosmic-border)] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
+                    placeholder="e.g., And"
+                    maxLength={10}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm mb-2 text-gray-300">Description</label>
+                <textarea
+                  rows={4}
+                  value={newConstellationDesc}
+                  onChange={(e) => setNewConstellationDesc(e.target.value)}
+                  className="w-full px-4 py-3 bg-[var(--cosmic-surface)] border border-[var(--cosmic-border)] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors resize-none"
+                  placeholder="Description of the constellation..."
+                />
+              </div>
+              <div className="flex gap-4">
+                <button
+                  type="submit"
+                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-all cosmic-glow hover:cosmic-glow-strong"
+                >
+                  Add Constellation
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setNewConstellationName('');
+                    setNewConstellationAbbr('');
+                    setNewConstellationDesc('');
                   }}
                   className="flex-1 py-3 bg-transparent border border-[var(--cosmic-border)] hover:bg-[var(--cosmic-card)] text-white rounded-lg transition-all"
                 >

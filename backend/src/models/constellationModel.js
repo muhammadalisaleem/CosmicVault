@@ -25,7 +25,7 @@ const createConstellation = async (name, description, abbreviation) => {
   const result = await pool
     .request()
     .input("Name", sql.VarChar, name)
-    .input("Description", sql.Text, description)
+    .input("Description", sql.VarChar(sql.MAX), description)
     .input("Abbreviation", sql.VarChar, abbreviation)
     .query(
       "INSERT INTO Constellations (Name, Description, Abbreviation) VALUES (@Name, @Description, @Abbreviation); SELECT SCOPE_IDENTITY() as ConstellationID"
@@ -40,7 +40,7 @@ const updateConstellation = async (constellationId, name, description, abbreviat
     .request()
     .input("ConstellationID", sql.Int, constellationId)
     .input("Name", sql.VarChar, name)
-    .input("Description", sql.Text, description)
+    .input("Description", sql.VarChar(sql.MAX), description)
     .input("Abbreviation", sql.VarChar, abbreviation)
     .query(
       "UPDATE Constellations SET Name = @Name, Description = @Description, Abbreviation = @Abbreviation WHERE ConstellationID = @ConstellationID"
