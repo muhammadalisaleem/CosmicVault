@@ -73,3 +73,38 @@ CREATE TABLE ObservationLogs (
     FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
     FOREIGN KEY (ObjectID) REFERENCES CelestialObjects(ObjectID) ON DELETE CASCADE
 );
+
+-- Table for user statistics (maintained by triggers)
+CREATE TABLE UserStatistics (
+    UserID INT PRIMARY KEY,
+    TotalObservations INT DEFAULT 0,
+    TotalObjectsDiscovered INT DEFAULT 0,
+    LastObservationDate DATETIME,
+    CurrentStreak INT DEFAULT 0,
+    LongestStreak INT DEFAULT 0,
+    LastUpdated DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+);
+
+-- Table for audit trail (populated by triggers)
+CREATE TABLE AuditLog (
+    AuditID INT PRIMARY KEY IDENTITY(1,1),
+    TableName VARCHAR(50) NOT NULL,
+    RecordID INT NOT NULL,
+    Action VARCHAR(10) NOT NULL, -- INSERT, UPDATE, DELETE
+    ChangedBy INT,
+    OldValue NVARCHAR(MAX),
+    NewValue NVARCHAR(MAX),
+    ChangeDate DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (ChangedBy) REFERENCES Users(UserID) ON DELETE SET NULL
+);
+
+-- Table for observation streak tracking (populated by triggers)
+CREATE TABLE ObservationStreaks (
+    StreakID INT PRIMARY KEY IDENTITY(1,1),
+    UserID INT NOT NULL,
+    StreakDate DATE NOT NULL,
+    StreakCount INT NOT NULL,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    UNIQUE(UserID, StreakDate)
+);
