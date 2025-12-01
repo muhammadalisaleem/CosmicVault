@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Settings, Plus, Trash2, Users, Database, Shield, Eye, X } from 'lucide-react';
 import type { Page } from '../App';
-import { typeAPI, constellationAPI, userAPI, objectAPI, logAPI } from '../services/api';
+import { typeAPI, constellationAPI, userAPI, objectAPI, logAPI, userStatisticsAPI, auditLogAPI, observationStreaksAPI } from '../services/api';
 
 interface AdminPanelProps {
   onNavigate: (page: Page) => void;
@@ -9,7 +9,7 @@ interface AdminPanelProps {
 }
 
 export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'objects' | 'constellations' | 'types'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'objects' | 'constellations' | 'types' | 'logs' | 'statistics' | 'audit' | 'streaks'>('overview');
   const [showAddModal, setShowAddModal] = useState(false);
   const [objectTypes, setObjectTypes] = useState<any[]>([]);
   const [constellations, setConstellations] = useState<any[]>([]);
@@ -24,6 +24,9 @@ export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
   const [newConstellationName, setNewConstellationName] = useState('');
   const [newConstellationAbbr, setNewConstellationAbbr] = useState('');
   const [newConstellationDesc, setNewConstellationDesc] = useState('');
+  const [userStatistics, setUserStatistics] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [observationStreaks, setObservationStreaks] = useState<any[]>([]);
 
   useEffect(() => {
     loadData();
@@ -31,12 +34,15 @@ export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
 
   const loadData = async () => {
     try {
-      const [typesData, constData, usersData, objData, logsData] = await Promise.all([
+      const [typesData, constData, usersData, objData, logsData, statsData, auditData, streaksData] = await Promise.all([
         typeAPI.getAll(),
         constellationAPI.getAll(),
         userAPI.getAll(),
         objectAPI.getAll(),
-        logAPI.getAll()
+        logAPI.getAll(),
+        userStatisticsAPI.getAll(),
+        auditLogAPI.getAll(),
+        observationStreaksAPI.getAll()
       ]);
       setObjectTypes(typesData.map((t: any) => ({
         id: t.TypeID,
@@ -48,6 +54,9 @@ export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
       setUsers(usersData);
       setObjects(objData);
       setLogs(logsData);
+      setUserStatistics(statsData);
+      setAuditLogs(auditData);
+      setObservationStreaks(streaksData);
     } catch (err) {
       console.error('Failed to load admin data:', err);
     } finally {
@@ -230,6 +239,54 @@ export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
             <span>Object Types</span>
           </button>
 
+          <button
+            onClick={() => setActiveTab('logs')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
+              activeTab === 'logs'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-300 hover:bg-[var(--cosmic-surface)]'
+            }`}
+          >
+            <Database className="w-5 h-5" />
+            <span>Observation Logs</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('statistics')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
+              activeTab === 'statistics'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-300 hover:bg-[var(--cosmic-surface)]'
+            }`}
+          >
+            <Shield className="w-5 h-5" />
+            <span>User Statistics</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('audit')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
+              activeTab === 'audit'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-300 hover:bg-[var(--cosmic-surface)]'
+            }`}
+          >
+            <Eye className="w-5 h-5" />
+            <span>Audit Trail</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('streaks')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
+              activeTab === 'streaks'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-300 hover:bg-[var(--cosmic-surface)]'
+            }`}
+          >
+            <Database className="w-5 h-5" />
+            <span>Observation Streaks</span>
+          </button>
+
           <div className="border-t border-[var(--cosmic-border)] my-4"></div>
 
           <button
@@ -252,6 +309,10 @@ export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
               {activeTab === 'objects' && 'Object Management'}
               {activeTab === 'constellations' && 'Constellation Database'}
               {activeTab === 'types' && 'Object Type Management'}
+              {activeTab === 'logs' && 'Observation Logs'}
+              {activeTab === 'statistics' && 'User Statistics'}
+              {activeTab === 'audit' && 'Audit Trail'}
+              {activeTab === 'streaks' && 'Observation Streaks'}
             </h2>
             <p className="text-gray-400">
               {activeTab === 'overview' && 'Monitor system statistics and database health'}
@@ -259,6 +320,10 @@ export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
               {activeTab === 'objects' && 'Manage celestial objects in the database'}
               {activeTab === 'constellations' && 'View and manage the 88 IAU constellations'}
               {activeTab === 'types' && 'Configure object type classifications'}
+              {activeTab === 'logs' && 'View all user observation logs'}
+              {activeTab === 'statistics' && 'View user engagement statistics maintained by triggers'}
+              {activeTab === 'audit' && 'Track all database changes and modifications'}
+              {activeTab === 'streaks' && 'Monitor daily observation streaks for all users'}
             </p>
           </div>
 
@@ -608,6 +673,148 @@ export function AdminPanel({ onNavigate, onLogout }: AdminPanelProps) {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Observation Logs Tab */}
+      {activeTab === 'logs' && (
+        <div className="cosmic-card p-6">
+          <p className="text-gray-400 mb-4">All user observation logs</p>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[var(--cosmic-border)]">
+                  <th className="text-left py-3 px-4">Log ID</th>
+                  <th className="text-left py-3 px-4">User</th>
+                  <th className="text-left py-3 px-4">Object</th>
+                  <th className="text-left py-3 px-4">Date</th>
+                  <th className="text-left py-3 px-4">Equipment</th>
+                  <th className="text-left py-3 px-4">Seeing</th>
+                </tr>
+              </thead>
+              <tbody>
+                {logs.map((log) => (
+                  <tr key={log.LogID} className="border-b border-[var(--cosmic-border)] hover:bg-[var(--cosmic-surface)] transition-colors">
+                    <td className="py-3 px-4">{log.LogID}</td>
+                    <td className="py-3 px-4">{log.Username || `User ${log.UserID}`}</td>
+                    <td className="py-3 px-4">{log.ObjectName || `Object ${log.ObjectID}`}</td>
+                    <td className="py-3 px-4">{new Date(log.ObservationDate).toLocaleString()}</td>
+                    <td className="py-3 px-4">{log.EquipmentUsed || 'N/A'}</td>
+                    <td className="py-3 px-4">{log.SeeingConditions || 'N/A'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* User Statistics Tab */}
+      {activeTab === 'statistics' && (
+        <div className="cosmic-card p-6">
+          <p className="text-gray-400 mb-4">User engagement statistics (maintained by database triggers)</p>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[var(--cosmic-border)]">
+                  <th className="text-left py-3 px-4">User</th>
+                  <th className="text-left py-3 px-4">Email</th>
+                  <th className="text-left py-3 px-4">Total Observations</th>
+                  <th className="text-left py-3 px-4">Objects Discovered</th>
+                  <th className="text-left py-3 px-4">Current Streak</th>
+                  <th className="text-left py-3 px-4">Longest Streak</th>
+                  <th className="text-left py-3 px-4">Last Observation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userStatistics.map((stat) => (
+                  <tr key={stat.UserID} className="border-b border-[var(--cosmic-border)] hover:bg-[var(--cosmic-surface)] transition-colors">
+                    <td className="py-3 px-4">{stat.Username}</td>
+                    <td className="py-3 px-4 text-sm text-gray-400">{stat.Email}</td>
+                    <td className="py-3 px-4 text-center">{stat.TotalObservations}</td>
+                    <td className="py-3 px-4 text-center">{stat.TotalObjectsDiscovered}</td>
+                    <td className="py-3 px-4 text-center">{stat.CurrentStreak} days</td>
+                    <td className="py-3 px-4 text-center">{stat.LongestStreak} days</td>
+                    <td className="py-3 px-4">{stat.LastObservationDate ? new Date(stat.LastObservationDate).toLocaleDateString() : 'Never'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Audit Trail Tab */}
+      {activeTab === 'audit' && (
+        <div className="cosmic-card p-6">
+          <p className="text-gray-400 mb-4">Database change audit trail (populated by triggers)</p>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[var(--cosmic-border)]">
+                  <th className="text-left py-3 px-4">Audit ID</th>
+                  <th className="text-left py-3 px-4">Table</th>
+                  <th className="text-left py-3 px-4">Record ID</th>
+                  <th className="text-left py-3 px-4">Action</th>
+                  <th className="text-left py-3 px-4">Changed By</th>
+                  <th className="text-left py-3 px-4">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {auditLogs.slice(0, 100).map((log) => (
+                  <tr key={log.AuditID} className="border-b border-[var(--cosmic-border)] hover:bg-[var(--cosmic-surface)] transition-colors">
+                    <td className="py-3 px-4">{log.AuditID}</td>
+                    <td className="py-3 px-4">{log.TableName}</td>
+                    <td className="py-3 px-4">{log.RecordID}</td>
+                    <td className="py-3 px-4">
+                      <span className={`px-2 py-1 rounded text-xs ${
+                        log.Action === 'INSERT' ? 'bg-green-500/20 text-green-300' :
+                        log.Action === 'UPDATE' ? 'bg-yellow-500/20 text-yellow-300' :
+                        'bg-red-500/20 text-red-300'
+                      }`}>
+                        {log.Action}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">{log.ChangedByUsername || 'System'}</td>
+                    <td className="py-3 px-4">{new Date(log.ChangeDate).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Observation Streaks Tab */}
+      {activeTab === 'streaks' && (
+        <div className="cosmic-card p-6">
+          <p className="text-gray-400 mb-4">Daily observation streak tracking (maintained by triggers)</p>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[var(--cosmic-border)]">
+                  <th className="text-left py-3 px-4">Streak ID</th>
+                  <th className="text-left py-3 px-4">User</th>
+                  <th className="text-left py-3 px-4">Date</th>
+                  <th className="text-left py-3 px-4">Streak Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {observationStreaks.slice(0, 100).map((streak) => (
+                  <tr key={streak.StreakID} className="border-b border-[var(--cosmic-border)] hover:bg-[var(--cosmic-surface)] transition-colors">
+                    <td className="py-3 px-4">{streak.StreakID}</td>
+                    <td className="py-3 px-4">{streak.Username}</td>
+                    <td className="py-3 px-4">{new Date(streak.StreakDate).toLocaleDateString()}</td>
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-1 rounded bg-purple-500/20 text-purple-300 text-sm">
+                        {streak.StreakCount} {streak.StreakCount === 1 ? 'day' : 'days'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

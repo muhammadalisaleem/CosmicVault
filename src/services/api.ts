@@ -337,3 +337,72 @@ export const logAPI = {
     return data;
   }
 };
+
+// ============ USER STATISTICS ============
+
+export const userStatisticsAPI = {
+  // Get all user statistics
+  async getAll() {
+    const response = await fetch(`${API_URL}/user-statistics`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch user statistics');
+    return data.data;
+  },
+
+  // Get user statistics by user ID
+  async getByUserId(userId: number) {
+    const response = await fetch(`${API_URL}/user-statistics/${userId}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch user statistics');
+    return data.data;
+  }
+};
+
+// ============ AUDIT LOGS ============
+
+export const auditLogAPI = {
+  // Get all audit logs
+  async getAll() {
+    const response = await fetch(`${API_URL}/audit-logs`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch audit logs');
+    return data.data;
+  },
+
+  // Get audit logs by table name
+  async getByTable(tableName: string) {
+    const response = await fetch(`${API_URL}/audit-logs/table/${tableName}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch audit logs');
+    return data.data;
+  },
+
+  // Get audit logs by user
+  async getByUser(userId: number) {
+    const response = await fetch(`${API_URL}/audit-logs/user/${userId}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch audit logs');
+    return data.data;
+  }
+};
+
+// ============ OBSERVATION STREAKS ============
+
+export const observationStreaksAPI = {
+  // Get all observation streaks
+  async getAll() {
+    const response = await fetch(`${API_URL}/observation-streaks`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch observation streaks');
+    return data.data;
+  },
+
+  // Get observation streaks by user
+  async getByUser(userId: number) {
+    const response = await fetch(`${API_URL}/observation-streaks/user/${userId}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch observation streaks');
+    return data.data;
+  }
+};
+

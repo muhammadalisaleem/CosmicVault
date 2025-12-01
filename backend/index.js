@@ -11,6 +11,9 @@ const objectTypeRoutes = require("./src/routes/objectTypeRoutes");
 const constellationRoutes = require("./src/routes/constellationRoutes");
 const celestialObjectRoutes = require("./src/routes/celestialObjectRoutes");
 const observationLogRoutes = require("./src/routes/observationLogRoutes");
+const userStatisticsRoutes = require("./src/routes/userStatisticsRoutes");
+const auditLogRoutes = require("./src/routes/auditLogRoutes");
+const observationStreaksRoutes = require("./src/routes/observationStreaksRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +28,9 @@ app.use("/types", objectTypeRoutes);
 app.use("/constellations", constellationRoutes);
 app.use("/objects", celestialObjectRoutes);
 app.use("/logs", observationLogRoutes);
+app.use("/user-statistics", userStatisticsRoutes);
+app.use("/audit-logs", auditLogRoutes);
+app.use("/observation-streaks", observationStreaksRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -46,6 +52,9 @@ app.get("/", (req, res) => {
       constellations: "/constellations",
       celestialObjects: "/objects",
       observationLogs: "/logs",
+      userStatistics: "/user-statistics",
+      auditLogs: "/audit-logs",
+      observationStreaks: "/observation-streaks",
       health: "/health",
     },
   });
