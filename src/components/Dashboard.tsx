@@ -19,6 +19,7 @@ export function Dashboard({ user, onNavigate, onLogout }: DashboardProps) {
     recentActivity: 0
   });
   const [recentObservations, setRecentObservations] = useState<any[]>([]);
+  const [observationTimeline, setObservationTimeline] = useState<Array<{ month: string; observations: number }>>([]);
   const [loading, setLoading] = useState(true);
 
   // Load stats from API on mount
@@ -35,6 +36,7 @@ export function Dashboard({ user, onNavigate, onLogout }: DashboardProps) {
           savedConstellations: 0,
           recentActivity: 0
         });
+        setObservationTimeline([]);
         setLoading(false);
         return;
       }
@@ -56,6 +58,36 @@ export function Dashboard({ user, onNavigate, onLogout }: DashboardProps) {
         recentActivity: recent
       });
 
+      // Calculate observation timeline (last 6 months)
+      const timelineData: { [key: string]: number } = {};
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      
+      // Initialize last 6 months
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const monthKey = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+        timelineData[monthKey] = 0;
+      }
+
+      // Count observations per month
+      logs.forEach(log => {
+        if (log.ObservationDate) {
+          const date = new Date(log.ObservationDate);
+          const monthKey = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+          if (timelineData.hasOwnProperty(monthKey)) {
+            timelineData[monthKey]++;
+          }
+        }
+      });
+
+      // Convert to array format for chart
+      const timelineArray = Object.entries(timelineData).map(([month, observations]) => ({
+        month: month.split(' ')[0], // Just the month name
+        observations
+      }));
+      setObservationTimeline(timelineArray);
+
       // Get recent observations (last 10, sorted by date desc)
       const sortedLogs = [...logs].sort((a, b) => {
         const dateA = new Date(a.ObservationDate || 0).getTime();
@@ -75,15 +107,6 @@ export function Dashboard({ user, onNavigate, onLogout }: DashboardProps) {
     { name: 'Galaxies', value: 32, color: '#8b5cf6' },
     { name: 'Nebulae', value: 28, color: '#06b6d4' },
     { name: 'Exoplanets', value: 23, color: '#ec4899' },
-  ];
-
-  const observationTimeline = [
-    { month: 'Jan', observations: 4 },
-    { month: 'Feb', observations: 7 },
-    { month: 'Mar', observations: 5 },
-    { month: 'Apr', observations: 9 },
-    { month: 'May', observations: 8 },
-    { month: 'Jun', observations: 14 },
   ];
 
   const formatDate = (dateStr: string | undefined) => {

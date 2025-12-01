@@ -34,14 +34,10 @@ export function Constellations({ user, onNavigate, onLogout }: ConstellationsPro
     setError('');
     try {
       const data = await constellationAPI.getAll();
-      // If API returns an empty array, fall back to local data
-      if (!data || (Array.isArray(data) && data.length === 0)) {
-        setConstellations(localConstellations as any[]);
-      } else {
-        setConstellations(data);
-      }
+      // Use API data directly (even if empty)
+      setConstellations(data || []);
     } catch (err) {
-      // Use local fallback when API fails
+      // Use local fallback only when API fails (network error, etc.)
       setConstellations(localConstellations as any[]);
       setError('Failed to load constellations from API — using local fallback');
     } finally {
@@ -123,13 +119,15 @@ export function Constellations({ user, onNavigate, onLogout }: ConstellationsPro
               <h2 className="mb-2">Constellations</h2>
               <p className="text-gray-400">Explore the official IAU constellations</p>
             </div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-all cosmic-glow hover:cosmic-glow-strong"
-            >
-              <Plus className="w-5 h-5" />
-              Add Constellation
-            </button>
+            {user?.role === 'admin' && (
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-all cosmic-glow hover:cosmic-glow-strong"
+              >
+                <Plus className="w-5 h-5" />
+                Add Constellation
+              </button>
+            )}
           </div>
 
           {/* Error Message */}
@@ -189,18 +187,20 @@ export function Constellations({ user, onNavigate, onLogout }: ConstellationsPro
                   </div>
                 )}
 
-                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white rounded-lg transition-all border border-purple-600/30">
-                    <Edit className="w-4 h-4" />
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => deleteConstellation(constellation.ConstellationID || 0)}
-                    className="px-4 py-2 bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white rounded-lg transition-all border border-red-600/30"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                {user?.role === 'admin' && (
+                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity mt-4">
+                    <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white rounded-lg transition-all border border-purple-600/30">
+                      <Edit className="w-4 h-4" />
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteConstellation(constellation.ConstellationID || 0)}
+                      className="px-4 py-2 bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white rounded-lg transition-all border border-red-600/30"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
