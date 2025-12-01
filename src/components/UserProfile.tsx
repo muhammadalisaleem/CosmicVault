@@ -14,6 +14,13 @@ interface UserProfileProps {
 export function UserProfile({ user, onNavigate, onLogout }: UserProfileProps) {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const [userStats, setUserStats] = useState({
     totalObservations: 0,
     totalObjects: 0,
@@ -131,7 +138,56 @@ export function UserProfile({ user, onNavigate, onLogout }: UserProfileProps) {
     }
   };
 
-  
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+    
+    if (!user?.id || !user?.username || !user?.email) {
+      setPasswordError('User information is missing');
+      return;
+    }
+
+    // Validate passwords
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setPasswordError('Please fill in all password fields');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 3) {
+      setPasswordError('New password must be at least 3 characters');
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('New passwords do not match');
+      return;
+    }
+
+    try {
+      setPasswordLoading(true);
+      
+      // First verify current password by attempting login
+      try {
+        await userAPI.login(user.username, passwordData.currentPassword);
+      } catch (err) {
+        setPasswordError('Current password is incorrect');
+        setPasswordLoading(false);
+        return;
+      }
+
+      // Update password
+      await userAPI.update(user.id, user.username, user.email, passwordData.newPassword);
+      
+      alert('Password changed successfully!');
+      setShowChangePassword(false);
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      console.error('Failed to change password:', err);
+      setPasswordError(err instanceof Error ? err.message : 'Failed to change password');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -282,41 +338,63 @@ export function UserProfile({ user, onNavigate, onLogout }: UserProfileProps) {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
           <div className="cosmic-card p-8 max-w-md w-full cosmic-glow">
             <h3 className="mb-6">Change Password</h3>
-            <form className="space-y-6">
+            
+            {passwordError && (
+              <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-sm">
+                {passwordError}
+              </div>
+            )}
+            
+            <form className="space-y-6" onSubmit={handleChangePassword}>
               <div>
                 <label className="block text-sm mb-2 text-gray-300">Current Password</label>
                 <input
                   type="password"
+                  value={passwordData.currentPassword}
+                  onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
                   className="w-full px-4 py-3 bg-[var(--cosmic-surface)] border border-[var(--cosmic-border)] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
                   placeholder="Enter current password"
+                  required
                 />
               </div>
               <div>
                 <label className="block text-sm mb-2 text-gray-300">New Password</label>
                 <input
                   type="password"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
                   className="w-full px-4 py-3 bg-[var(--cosmic-surface)] border border-[var(--cosmic-border)] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
                   placeholder="Enter new password"
+                  required
+                  minLength={3}
                 />
               </div>
               <div>
                 <label className="block text-sm mb-2 text-gray-300">Confirm New Password</label>
                 <input
                   type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
                   className="w-full px-4 py-3 bg-[var(--cosmic-surface)] border border-[var(--cosmic-border)] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
                   placeholder="Confirm new password"
+                  required
                 />
               </div>
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-all cosmic-glow hover:cosmic-glow-strong"
+                  disabled={passwordLoading}
+                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-lg transition-all cosmic-glow hover:cosmic-glow-strong"
                 >
-                  Update Password
+                  {passwordLoading ? 'Updating...' : 'Update Password'}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowChangePassword(false)}
+                  onClick={() => {
+                    setShowChangePassword(false);
+                    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                    setPasswordError('');
+                  }}
                   className="flex-1 py-3 bg-transparent border border-[var(--cosmic-border)] hover:bg-[var(--cosmic-card)] text-white rounded-lg transition-all"
                 >
                   Cancel

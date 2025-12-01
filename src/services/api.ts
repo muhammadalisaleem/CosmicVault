@@ -173,15 +173,15 @@ export interface CelestialObject {
   Magnitude?: number;
   Distance?: number;
   StarID?: number;
-  SurfaceTemperature?: number;
-  Luminosity?: number;
-  Radius?: number;
+  SpectralClass?: string;
+  LuminosityClass?: string;
+  Temperature?: number;
   Mass?: number;
   ExoplanetID?: number;
-  HostStarName?: string;
-  DiscoveryYear?: number;
+  HostStarID?: number;
   OrbitalPeriod?: number;
-  PlanetRadius?: number;
+  SemiMajorAxis?: number;
+  Eccentricity?: number;
 }
 
 export const objectAPI = {
@@ -211,16 +211,16 @@ export const objectAPI = {
     magnitude?: number;
     distance?: number;
     starDetails?: {
-      surfaceTemperature?: number;
-      luminosity?: number;
-      radius?: number;
+      spectralClass?: string;
+      luminosityClass?: string;
+      temperature?: number;
       mass?: number;
     };
     exoplanetDetails?: {
-      hostStarName?: string;
-      discoveryYear?: number;
+      hostStarId?: number;
       orbitalPeriod?: number;
-      radius?: number;
+      semiMajorAxis?: number;
+      eccentricity?: number;
     };
   }) {
     const response = await fetch(`${API_URL}/objects`, {

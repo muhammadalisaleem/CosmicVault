@@ -244,6 +244,52 @@ export function CelestialObjects({ user, onNavigate, onLogout, onEdit, onNew }: 
                       <span>{object.Magnitude}</span>
                     </div>
                   )}
+                  
+                  {/* Star-specific details */}
+                  {object.TypeName === 'Star' && object.SpectralClass && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Spectral Class:</span>
+                      <span className="font-semibold text-yellow-400">{object.SpectralClass}</span>
+                    </div>
+                  )}
+                  {object.TypeName === 'Star' && object.LuminosityClass && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Luminosity:</span>
+                      <span>{object.LuminosityClass}</span>
+                    </div>
+                  )}
+                  {object.TypeName === 'Star' && object.Temperature && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Temperature:</span>
+                      <span>{object.Temperature.toLocaleString()} K</span>
+                    </div>
+                  )}
+                  {object.TypeName === 'Star' && object.Mass && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Mass:</span>
+                      <span>{object.Mass} M☉</span>
+                    </div>
+                  )}
+                  
+                  {/* Exoplanet-specific details */}
+                  {object.TypeName === 'Exoplanet' && object.OrbitalPeriod && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Orbital Period:</span>
+                      <span className="font-semibold text-pink-400">{object.OrbitalPeriod} days</span>
+                    </div>
+                  )}
+                  {object.TypeName === 'Exoplanet' && object.SemiMajorAxis && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Semi-Major Axis:</span>
+                      <span>{object.SemiMajorAxis} AU</span>
+                    </div>
+                  )}
+                  {object.TypeName === 'Exoplanet' && object.Eccentricity !== undefined && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Eccentricity:</span>
+                      <span>{object.Eccentricity}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

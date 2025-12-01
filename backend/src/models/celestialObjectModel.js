@@ -195,8 +195,8 @@ const getStarDetailsByObjectId = async (objectId) => {
   const pool = getPool();
   const result = await pool
     .request()
-    .input("ObjectID", sql.Int, objectId)
-    .query("SELECT * FROM StarDetails WHERE ObjectID = @ObjectID");
+    .input("StarID", sql.Int, objectId)
+    .query("SELECT * FROM StarDetails WHERE StarID = @StarID");
   return result.recordset[0];
 };
 
@@ -205,9 +205,19 @@ const getExoplanetDetailsByObjectId = async (objectId) => {
   const pool = getPool();
   const result = await pool
     .request()
-    .input("ObjectID", sql.Int, objectId)
-    .query("SELECT * FROM ExoplanetDetails WHERE ObjectID = @ObjectID");
+    .input("ExoplanetID", sql.Int, objectId)
+    .query("SELECT * FROM ExoplanetDetails WHERE ExoplanetID = @ExoplanetID");
   return result.recordset[0];
+};
+
+// Check if a celestial object is used as a host star
+const isUsedAsHostStar = async (objectId) => {
+  const pool = getPool();
+  const result = await pool
+    .request()
+    .input("HostStarID", sql.Int, objectId)
+    .query("SELECT COUNT(*) as count FROM ExoplanetDetails WHERE HostStarID = @HostStarID");
+  return result.recordset[0].count > 0;
 };
 
 module.exports = {
@@ -222,4 +232,5 @@ module.exports = {
   deleteCelestialObject,
   getStarDetailsByObjectId,
   getExoplanetDetailsByObjectId,
+  isUsedAsHostStar,
 };

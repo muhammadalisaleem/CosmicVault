@@ -28,7 +28,7 @@ CREATE TABLE CelestialObjects (
     DistanceLightYears DECIMAL(15, 2),
     ApparentMagnitude DECIMAL(5, 2), 
     FOREIGN KEY (TypeID) REFERENCES ObjectTypes(TypeID),
-    FOREIGN KEY (ConstellationID) REFERENCES Constellations(ConstellationID)
+    FOREIGN KEY (ConstellationID) REFERENCES Constellations(ConstellationID) ON DELETE SET NULL
 );
 
 -- Table for star-specific data 
@@ -38,7 +38,7 @@ CREATE TABLE StarDetails (
     LuminosityClass VARCHAR(20), 
     Temperature INT, 
     MassSolar DECIMAL(10, 2), 
-    FOREIGN KEY (StarID) REFERENCES CelestialObjects(ObjectID)
+    FOREIGN KEY (StarID) REFERENCES CelestialObjects(ObjectID) ON DELETE CASCADE
 );
 
 -- Table for exoplanet-specific data 
@@ -48,8 +48,8 @@ CREATE TABLE ExoplanetDetails (
     OrbitalPeriodDays DECIMAL(10, 2), 
     SemiMajorAxisAU DECIMAL(10, 2), 
     Eccentricity DECIMAL(5, 2), 
-    FOREIGN KEY (ExoplanetID) REFERENCES CelestialObjects(ObjectID),
-    FOREIGN KEY (HostStarID) REFERENCES CelestialObjects(ObjectID)
+    FOREIGN KEY (ExoplanetID) REFERENCES CelestialObjects(ObjectID) ON DELETE CASCADE,
+    FOREIGN KEY (HostStarID) REFERENCES CelestialObjects(ObjectID) ON DELETE NO ACTION
 );
 
 -- Table for users
@@ -70,6 +70,6 @@ CREATE TABLE ObservationLogs (
     Notes TEXT,
     EquipmentUsed VARCHAR(200), 
     SeeingConditions VARCHAR(100),
-    FOREIGN KEY (UserID) REFERENCES Users(UserID),
-    FOREIGN KEY (ObjectID) REFERENCES CelestialObjects(ObjectID)
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (ObjectID) REFERENCES CelestialObjects(ObjectID) ON DELETE CASCADE
 );

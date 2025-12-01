@@ -38,6 +38,7 @@ export function CelestialObjectForm({ user, onNavigate, onLogout, editingId }: C
   });
   const [types, setTypes] = useState<Array<{TypeID: number; TypeName: string}>>([]);
   const [constellations, setConstellations] = useState<Array<{ConstellationID: number; Name?: string}>>([]);
+  const [stars, setStars] = useState<Array<{ObjectID: number; Name: string}>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -50,12 +51,16 @@ export function CelestialObjectForm({ user, onNavigate, onLogout, editingId }: C
 
   const loadData = async () => {
     try {
-      const [typesData, constData] = await Promise.all([
+      const [typesData, constData, objectsData] = await Promise.all([
         typeAPI.getAll(),
-        constellationAPI.getAll()
+        constellationAPI.getAll(),
+        objectAPI.getAll()
       ]);
       setTypes(typesData);
       setConstellations(constData);
+      // Filter only stars for the host star dropdown
+      const starObjects = objectsData.filter((obj: any) => obj.TypeName === 'Star');
+      setStars(starObjects);
     } catch (err) {
       console.error('Failed to load data:', err);
     }
@@ -77,7 +82,7 @@ export function CelestialObjectForm({ user, onNavigate, onLogout, editingId }: C
         luminosityClass: obj.LuminosityClass || 'V',
         temperature: obj.Temperature || '',
         mass: obj.Mass || '',
-        hostStar: obj.HostStar || '',
+        hostStar: obj.HostStarID ? String(obj.HostStarID) : '',
         orbitalPeriod: obj.OrbitalPeriod || '',
         semiMajorAxis: obj.SemiMajorAxis || '',
         eccentricity: obj.Eccentricity || ''
@@ -342,9 +347,11 @@ export function CelestialObjectForm({ user, onNavigate, onLogout, editingId }: C
                       className="w-full px-4 py-3 bg-[var(--cosmic-surface)] border border-[var(--cosmic-border)] rounded-lg text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
                     >
                       <option value="">Select host star...</option>
-                      <option value="1">Betelgeuse</option>
-                      <option value="2">Sirius</option>
-                      <option value="3">Proxima Centauri</option>
+                      {stars.map(star => (
+                        <option key={star.ObjectID} value={star.ObjectID}>
+                          {star.Name}
+                        </option>
+                      ))}
                     </select>
                   </div>
 

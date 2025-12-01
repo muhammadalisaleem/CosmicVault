@@ -82,25 +82,29 @@ const createCelestialObject = async (req, res) => {
     let starId = null;
     let exoplanetId = null;
 
+    // Get the type name to determine what details to create
+    const type = await objectTypeModel.getObjectTypeById(typeId);
+    const typeName = type?.TypeName;
+
     // If type is Star and star details provided
-    if (starDetails && typeId === 1) {
+    if (starDetails && typeName === 'Star') {
       starId = await celestialObjectModel.createStarDetails(
         objectId,
-        starDetails.surfaceTemperature || null,
-        starDetails.luminosity || null,
-        starDetails.radius || null,
+        starDetails.spectralClass || null,
+        starDetails.luminosityClass || null,
+        starDetails.temperature || null,
         starDetails.mass || null
       );
     }
 
     // If type is Exoplanet and exoplanet details provided
-    if (exoplanetDetails && typeId === 2) {
+    if (exoplanetDetails && typeName === 'Exoplanet') {
       exoplanetId = await celestialObjectModel.createExoplanetDetails(
         objectId,
-        exoplanetDetails.hostStarName || "",
-        exoplanetDetails.discoveryYear || null,
+        exoplanetDetails.hostStarId || null,
         exoplanetDetails.orbitalPeriod || null,
-        exoplanetDetails.radius || null
+        exoplanetDetails.semiMajorAxis || null,
+        exoplanetDetails.eccentricity || null
       );
     }
 
@@ -166,8 +170,12 @@ const updateCelestialObject = async (req, res) => {
       });
     }
 
-    // Update star details if provided
-    if (starDetails) {
+    // Get the type name to determine what details to update
+    const type = await objectTypeModel.getObjectTypeById(typeId);
+    const typeName = type?.TypeName;
+
+    // Update or create star details if provided and type is Star
+    if (starDetails && typeName === 'Star') {
       const star = await celestialObjectModel.getStarDetailsByObjectId(id);
       if (star) {
         await celestialObjectModel.updateStarDetails(
@@ -177,15 +185,33 @@ const updateCelestialObject = async (req, res) => {
           starDetails.temperature,
           starDetails.mass
         );
+      } else {
+        // Create star details if they don't exist
+        await celestialObjectModel.createStarDetails(
+          id,
+          starDetails.spectralClass,
+          starDetails.luminosityClass,
+          starDetails.temperature,
+          starDetails.mass
+        );
       }
     }
 
-    // Update exoplanet details if provided
-    if (exoplanetDetails) {
+    // Update or create exoplanet details if provided and type is Exoplanet
+    if (exoplanetDetails && typeName === 'Exoplanet') {
       const exoplanet = await celestialObjectModel.getExoplanetDetailsByObjectId(id);
       if (exoplanet) {
         await celestialObjectModel.updateExoplanetDetails(
           exoplanet.ExoplanetID,
+          exoplanetDetails.hostStarId,
+          exoplanetDetails.orbitalPeriod,
+          exoplanetDetails.semiMajorAxis,
+          exoplanetDetails.eccentricity
+        );
+      } else {
+        // Create exoplanet details if they don't exist
+        await celestialObjectModel.createExoplanetDetails(
+          id,
           exoplanetDetails.hostStarId,
           exoplanetDetails.orbitalPeriod,
           exoplanetDetails.semiMajorAxis,
@@ -212,6 +238,17 @@ const updateCelestialObject = async (req, res) => {
 const deleteCelestialObject = async (req, res) => {
   try {
     const { id } = req.params;
+    
+    // Check if this object is being used as a host star for any exoplanets
+    const isHostStar = await celestialObjectModel.isUsedAsHostStar(id);
+    
+    if (isHostStar) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot delete this celestial object because it is being used as a host star for one or more exoplanets. Please remove or update the exoplanet references first.",
+      });
+    }
+    
     const rowsAffected = await celestialObjectModel.deleteCelestialObject(id);
 
     if (rowsAffected === 0) {
