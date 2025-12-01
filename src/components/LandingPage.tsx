@@ -66,6 +66,12 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                 <span>Get Started</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
+              <button
+                onClick={() => onNavigate('admin-login')}
+                className="px-8 py-4 bg-red-600/20 text-red-300 border border-red-600/30 rounded-lg hover:bg-red-600 hover:text-white transition-all"
+              >
+                Admin Access
+              </button>
             </div>
 
             {/* Features Grid */}
@@ -113,68 +119,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
           </div>
         </div>
 
-        {/* Stats Section */}
-        <div className="container mx-auto px-6 pb-32">
-          <div className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-3 gap-8 p-12 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-sm">
-              <div className="text-center">
-                <div className="text-4xl mb-2 bg-gradient-to-br from-white to-white/40 bg-clip-text text-transparent">128+</div>
-                <div className="text-sm text-gray-400">Objects Cataloged</div>
-              </div>
-              <div className="text-center border-x border-white/10">
-                <div className="text-4xl mb-2 bg-gradient-to-br from-white to-white/40 bg-clip-text text-transparent">47+</div>
-                <div className="text-sm text-gray-400">Observations Logged</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl mb-2 bg-gradient-to-br from-white to-white/40 bg-clip-text text-transparent">12+</div>
-                <div className="text-sm text-gray-400">Constellations Tracked</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tech Stack Section */}
-        <div className="container mx-auto px-6 pb-32">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full backdrop-blur-sm mb-6">
-                <Layers className="w-4 h-4 text-purple-400" />
-                <span className="text-sm text-gray-300">Built with modern technology</span>
-              </div>
-              <h3 className="text-3xl mb-4">Full-Stack Architecture</h3>
-              <p className="text-gray-400 max-w-2xl mx-auto">
-                Powered by industry-standard technologies for performance and reliability
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="p-8 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-cyan-500/20 to-cyan-500/5 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Sparkles className="w-8 h-8 text-cyan-400" />
-                </div>
-                <h5 className="mb-2">React + TypeScript</h5>
-                <p className="text-sm text-gray-400">Modern, type-safe UI development</p>
-              </div>
-
-              <div className="p-8 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500/20 to-green-500/5 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <div className="text-3xl">⚡</div>
-                </div>
-                <h5 className="mb-2">Node.js Runtime</h5>
-                <p className="text-sm text-gray-400">Fast, scalable backend services</p>
-              </div>
-
-              <div className="p-8 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-purple-500/5 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Database className="w-8 h-8 text-purple-400" />
-                </div>
-                <h5 className="mb-2">MS SQL Server</h5>
-                <p className="text-sm text-gray-400">Enterprise-grade data storage</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
+       
         {/* CTA Section */}
         <div className="container mx-auto px-6 pb-20">
           <div className="max-w-4xl mx-auto">

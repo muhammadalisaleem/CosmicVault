@@ -3,7 +3,7 @@ import { Sidebar } from './Sidebar';
 import { User as UserIcon, Mail, Calendar, Star, Eye, Trash2, Lock } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import type { Page, User } from '../App';
-import { logAPI, objectAPI } from '../services/api';
+import { logAPI, objectAPI, userAPI } from '../services/api';
 
 interface UserProfileProps {
   user: User | null;
@@ -22,6 +22,7 @@ export function UserProfile({ user, onNavigate, onLogout }: UserProfileProps) {
   });
   const [loading, setLoading] = useState(true);
   const [observationCategories, setObservationCategories] = useState<Array<{name: string; value: number; color: string}>>([]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
 
   useEffect(() => {
     loadUserStats();
@@ -95,6 +96,20 @@ export function UserProfile({ user, onNavigate, onLogout }: UserProfileProps) {
       } catch (e) {
         console.error('Failed to compute observation categories', e);
       }
+
+      // Get recent activity from logs (last 10)
+      const sortedLogs = [...logs].sort((a, b) => {
+        const dateA = new Date(a.ObservationDate || 0).getTime();
+        const dateB = new Date(b.ObservationDate || 0).getTime();
+        return dateB - dateA;
+      }).slice(0, 10);
+
+      const activities = sortedLogs.map(log => ({
+        date: new Date(log.ObservationDate || '').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        action: `Observed ${log.ObjectName || 'Unknown Object'}`,
+        type: 'observation'
+      }));
+      setRecentActivity(activities);
     } catch (err) {
       console.error('Failed to load stats:', err);
     } finally {
@@ -102,14 +117,21 @@ export function UserProfile({ user, onNavigate, onLogout }: UserProfileProps) {
     }
   };
 
-  
+  const handleDeleteAccount = async () => {
+    if (!user?.id) return;
+    
+    try {
+      await userAPI.delete(user.id);
+      alert('Account deleted successfully');
+      setShowDeleteConfirm(false);
+      onLogout();
+    } catch (err) {
+      console.error('Failed to delete account:', err);
+      alert('Failed to delete account. Please try again.');
+    }
+  };
 
-  const recentActivity = [
-    { date: '2024-06-15', action: 'Observed Andromeda Galaxy', type: 'observation' },
-    { date: '2024-06-12', action: 'Added Orion Nebula to catalog', type: 'catalog' },
-    { date: '2024-06-10', action: 'Updated profile information', type: 'profile' },
-    { date: '2024-06-08', action: 'Logged observation of Betelgeuse', type: 'observation' },
-  ];
+  
 
   return (
     <div className="flex min-h-screen">
@@ -233,18 +255,22 @@ export function UserProfile({ user, onNavigate, onLogout }: UserProfileProps) {
             <div className="cosmic-card p-6">
               <h4 className="mb-6">Recent Activity</h4>
               <div className="space-y-4">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-start gap-4 p-3 bg-[var(--cosmic-surface)] rounded-lg">
-                    <div className={`w-2 h-2 rounded-full mt-2 ${
-                      activity.type === 'observation' ? 'bg-purple-400' :
-                      activity.type === 'catalog' ? 'bg-cyan-400' : 'bg-pink-400'
-                    }`}></div>
-                    <div className="flex-1">
-                      <p className="text-gray-300">{activity.action}</p>
-                      <p className="text-sm text-gray-400 mt-1">{activity.date}</p>
+                {recentActivity.length > 0 ? (
+                  recentActivity.map((activity, index) => (
+                    <div key={index} className="flex items-start gap-4 p-3 bg-[var(--cosmic-surface)] rounded-lg">
+                      <div className={`w-2 h-2 rounded-full mt-2 ${
+                        activity.type === 'observation' ? 'bg-purple-400' :
+                        activity.type === 'catalog' ? 'bg-cyan-400' : 'bg-pink-400'
+                      }`}></div>
+                      <div className="flex-1">
+                        <p className="text-gray-300">{activity.action}</p>
+                        <p className="text-sm text-gray-400 mt-1">{activity.date}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-center py-8">No recent activity</p>
+                )}
               </div>
             </div>
           </div>
@@ -311,10 +337,7 @@ export function UserProfile({ user, onNavigate, onLogout }: UserProfileProps) {
             </p>
             <div className="flex gap-4">
               <button
-                onClick={() => {
-                  setShowDeleteConfirm(false);
-                  onLogout();
-                }}
+                onClick={handleDeleteAccount}
                 className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-all"
               >
                 Yes, Delete My Account

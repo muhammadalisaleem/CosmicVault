@@ -10,6 +10,7 @@ import { ObservationLogForm } from './components/ObservationLogForm';
 import { Constellations } from './components/Constellations';
 import { UserProfile } from './components/UserProfile';
 import { AdminPanel } from './components/AdminPanel';
+import { AdminLoginPage } from './components/AdminLoginPage';
 
 export type Page = 
   | 'landing' 
@@ -22,7 +23,8 @@ export type Page =
   | 'observation-log-form' 
   | 'constellations' 
   | 'profile'
-  | 'admin';
+  | 'admin'
+  | 'admin-login';
 
 export interface User {
   id: number;
@@ -34,13 +36,19 @@ export interface User {
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('landing');
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [editingObjectId, setEditingObjectId] = useState<number | null>(null);
 
-  // Load user from localStorage on mount
+  // Load user and admin session from localStorage on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('cosmicvault_user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
+    }
+    
+    const savedAdmin = localStorage.getItem('cosmicvault_admin');
+    if (savedAdmin) {
+      setIsAdmin(true);
     }
   }, []);
 
@@ -58,6 +66,17 @@ export default function App() {
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('cosmicvault_user');
+    navigate('landing');
+  };
+
+  const handleAdminLogin = () => {
+    setIsAdmin(true);
+    navigate('admin');
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdmin(false);
+    localStorage.removeItem('cosmicvault_admin');
     navigate('landing');
   };
 
@@ -83,7 +102,8 @@ export default function App() {
       {currentPage === 'observation-log-form' && <ObservationLogForm user={user} onNavigate={navigate} onLogout={handleLogout} />}
       {currentPage === 'constellations' && <Constellations user={user} onNavigate={navigate} onLogout={handleLogout} />}
       {currentPage === 'profile' && <UserProfile user={user} onNavigate={navigate} onLogout={handleLogout} />}
-      {currentPage === 'admin' && <AdminPanel user={user} onNavigate={navigate} onLogout={handleLogout} />}
+      {currentPage === 'admin-login' && <AdminLoginPage onAdminLogin={handleAdminLogin} onBack={() => navigate('landing')} />}
+      {currentPage === 'admin' && isAdmin && <AdminPanel onNavigate={navigate} onLogout={handleAdminLogout} />}
     </div>
   );
 }

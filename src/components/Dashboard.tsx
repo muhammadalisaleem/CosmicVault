@@ -18,6 +18,7 @@ export function Dashboard({ user, onNavigate, onLogout }: DashboardProps) {
     savedConstellations: 0,
     recentActivity: 0
   });
+  const [recentObservations, setRecentObservations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Load stats from API on mount
@@ -54,6 +55,14 @@ export function Dashboard({ user, onNavigate, onLogout }: DashboardProps) {
         savedConstellations: constellations.length,
         recentActivity: recent
       });
+
+      // Get recent observations (last 10, sorted by date desc)
+      const sortedLogs = [...logs].sort((a, b) => {
+        const dateA = new Date(a.ObservationDate || 0).getTime();
+        const dateB = new Date(b.ObservationDate || 0).getTime();
+        return dateB - dateA;
+      }).slice(0, 10);
+      setRecentObservations(sortedLogs);
     } catch (err) {
       console.error('Failed to load stats:', err);
     } finally {
@@ -77,12 +86,14 @@ export function Dashboard({ user, onNavigate, onLogout }: DashboardProps) {
     { month: 'Jun', observations: 14 },
   ];
 
-  const recentObservations = [
-    { id: 1, object: 'Andromeda Galaxy', date: '2024-06-15', type: 'Galaxy' },
-    { id: 2, object: 'Orion Nebula', date: '2024-06-12', type: 'Nebula' },
-    { id: 3, object: 'Betelgeuse', date: '2024-06-08', type: 'Star' },
-    { id: 4, object: 'Proxima Centauri b', date: '2024-06-05', type: 'Exoplanet' },
-  ];
+  const formatDate = (dateStr: string | undefined) => {
+    if (!dateStr) return 'N/A';
+    try {
+      return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch {
+      return 'N/A';
+    }
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -251,22 +262,26 @@ export function Dashboard({ user, onNavigate, onLogout }: DashboardProps) {
           <div className="cosmic-card p-6">
             <h4 className="mb-6">Recent Observations</h4>
             <div className="space-y-4">
-              {recentObservations.map((obs) => (
-                <div key={obs.id} className="flex items-center justify-between p-4 bg-[var(--cosmic-surface)] rounded-lg hover:bg-[var(--cosmic-border)] transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center">
-                      <Star className="w-5 h-5" />
+              {recentObservations.length > 0 ? (
+                recentObservations.map((obs) => (
+                  <div key={obs.LogID} className="flex items-center justify-between p-4 bg-[var(--cosmic-surface)] rounded-lg hover:bg-[var(--cosmic-border)] transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                        <Star className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h5 className="mb-1">{obs.ObjectName || 'Unknown Object'}</h5>
+                        <p className="text-sm text-gray-400">{obs.Notes ? obs.Notes.substring(0, 50) + (obs.Notes.length > 50 ? '...' : '') : 'No notes'}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h5 className="mb-1">{obs.object}</h5>
-                      <p className="text-sm text-gray-400">{obs.type}</p>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-400">{formatDate(obs.ObservationDate)}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-400">{obs.date}</p>
-                  </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-gray-400 text-center py-8">No observations yet. Start logging your observations!</p>
+              )}
             </div>
           </div>
         </div>

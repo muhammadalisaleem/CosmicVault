@@ -15,7 +15,6 @@ export function Sidebar({ user, currentPage, onNavigate, onLogout }: SidebarProp
     { id: 'observation-logs' as Page, label: 'Observations', icon: BookOpen },
     { id: 'constellations' as Page, label: 'Constellations', icon: Telescope },
     { id: 'profile' as Page, label: 'Profile', icon: User },
-    { id: 'admin' as Page, label: 'Admin Panel', icon: Settings },
   ];
 
   return (
